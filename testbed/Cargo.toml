@@ -1,0 +1,24 @@
+[package]
+name = "testbed"
+description = "Component testbed — ride simulation and desktop panel testing"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+[[bin]]
+name = "testbed"
+path = "src/main.rs"
+
+[features]
+# Fixed 800×480 panel window (matches co-pilot-imx8mp / co-pilot-qemu)
+virt-panel = []
+
+[dependencies]
+instrumentation = { workspace = true }
+slint = { workspace = true }
+chrono = { workspace = true }
+
+[build-dependencies]

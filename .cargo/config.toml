@@ -1,6 +1,6 @@
 [alias]
 # 800×480 borderless panel — matches co-pilot-imx8mp and co-pilot-qemu display
-virt = "run --bin sigma-dash --features virt-panel"
+virt = "run -p testbed --features virt-panel"
 
 [env]
 SIGMA_DISPLAY_MODE = "night"

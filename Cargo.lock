@@ -2122,7 +2122,6 @@ checksum = "36eee07d8e02bd95bf52b2e642cf13d33701b94c6e4b04fbf1d1fb07e9cb19e7"
 name = "instrumentation"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "slint",
  "slint-build",
 ]
@@ -3773,6 +3772,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
+name = "sigma-racer"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "instrumentation",
+ "slint",
+]
+
+[[package]]
 name = "signal-hook-registry"
 version = "1.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4152,6 +4160,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "testbed"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "instrumentation",
+ "slint",
 ]
 
 [[package]]

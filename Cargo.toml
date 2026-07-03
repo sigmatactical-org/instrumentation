@@ -1,24 +1,16 @@
-[package]
-name = "instrumentation"
+[workspace]
+resolver = "2"
+members = ["instrumentation", "sigma-racer", "testbed"]
+
+[workspace.package]
 version = "0.1.0"
-description = "Sigma motorcycle instrument cluster UI (sigma-dash)"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["Sigma Tactical Group contributors <https://github.com/sigmatactical-org>"]
 publish = false
-build = "build.rs"
 
-[[bin]]
-name = "sigma-dash"
-path = "src/main.rs"
-
-[features]
-# Fixed 800×480 panel window for local testing (matches co-pilot-imx8mp / co-pilot-qemu)
-virt-panel = []
-
-[dependencies]
-# Pinned for Yocto meta-rust 1.86 (slint 1.14+ requires rustc 1.88+)
+[workspace.dependencies]
 slint = { version = "=1.13.1", default-features = false, features = ["renderer-femtovg", "backend-winit", "compat-1-2"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
-[build-dependencies]
 slint-build = "=1.13.1"
+instrumentation = { path = "instrumentation" }

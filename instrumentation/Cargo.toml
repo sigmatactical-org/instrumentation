@@ -1,0 +1,18 @@
+[package]
+name = "instrumentation"
+description = "Reusable Sigma motorcycle instrument cluster UI (Slint)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+slint = { workspace = true }
+
+[build-dependencies]
+slint-build = { workspace = true }
