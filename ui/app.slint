@@ -1,0 +1,46 @@
+import { RoadDashboard } from "road_dashboard.slint";
+import { SigmaTheme } from "theme.slint";
+
+export component SigmaDashboard inherits Window {
+    title: "Sigma Instrumentation";
+    preferred-width: 800px;
+    preferred-height: 480px;
+    background: SigmaTheme.bg;
+    no-frame: true;
+
+    callback rpm-up();
+    callback rpm-down();
+
+    in-out property <float> rpm: 1200;
+    in-out property <int> speed: 0;
+    in-out property <int> gear: 0;
+    in-out property <string> riding-mode: "SPORT";
+    in-out property <int> coolant-c: 72;
+    in-out property <int> odometer: 1245;
+    in-out property <float> trip1: 137.4;
+    in-out property <int> dtc: 3;
+    in-out property <int> dwc: 3;
+    in-out property <int> dsc: 2;
+    in-out property <bool> lap-active: false;
+    in-out property <bool> side-stand: true;
+
+    RoadDashboard {
+        rpm: root.rpm;
+        speed: root.speed;
+        gear: root.gear;
+        riding-mode: root.riding-mode;
+        coolant-c: root.coolant-c;
+        odometer: root.odometer;
+        trip1: root.trip1;
+        dtc: root.dtc;
+        dwc: root.dwc;
+        dsc: root.dsc;
+        lap-active: root.lap-active;
+        side-stand: root.side-stand;
+    }
+
+    FocusScope {
+        KeyBinding { keys: @keys("+"); activated => { root.rpm-up(); } }
+        KeyBinding { keys: @keys("-"); activated => { root.rpm-down(); } }
+    }
+}

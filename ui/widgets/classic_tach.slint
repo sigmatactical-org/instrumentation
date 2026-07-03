@@ -1,0 +1,227 @@
+import { SigmaTheme } from "../theme.slint";
+import { SportTab } from "sport_tab.slint";
+import { ElectronicsPanel } from "electronics_panel.slint";
+
+// Yamaha XSR900 GP — gauge 1–12 ×1000, red zone 11 250 r/min (owner's manual)
+component GaugeFace inherits Rectangle {
+    in property <float> rpm: 1200;
+    in property <int> gear: 0;
+    in property <int> min-rpm: 0;
+    in property <int> max-rpm: 12000;
+
+    private property <float> ratio: clamp((root.rpm - root.min-rpm) / (root.max-rpm - root.min-rpm), 0, 1);
+    private property <angle> start-angle: 90deg;
+    private property <angle> sweep: 270deg;
+    private property <angle> needle-angle: root.start-angle + root.ratio * root.sweep;
+    private property <bool> trail-large-arc: root.ratio * root.sweep > 180deg;
+    private property <float> redline-start: 11250.0 / 12000.0;
+
+    private property <float> cx: 100;
+    private property <float> cy: 100;
+    private property <float> outer-r: 96;
+    private property <float> inner-r: 46;
+    private property <float> tick-r1: outer-r;
+    private property <float> tick-r0: outer-r - 7;
+    private property <float> num-r: outer-r - 16;
+
+    width: 100%;
+    height: 100%;
+    background: transparent;
+
+    Path {
+        width: 100%; height: 100%;
+        viewbox-width: 200; viewbox-height: 200;
+        property <angle> a0: root.start-angle + root.redline-start * root.sweep;
+        property <angle> a1: root.start-angle + root.sweep;
+        MoveTo { x: cx + outer-r * cos(a0); y: cy + outer-r * sin(a0); }
+        ArcTo {
+            x: cx + outer-r * cos(a1); y: cy + outer-r * sin(a1);
+            radius-x: outer-r; radius-y: outer-r; sweep: true;
+            large-arc: (a1 - a0) > 180deg;
+        }
+        LineTo { x: cx + inner-r * cos(a1); y: cy + inner-r * sin(a1); }
+        ArcTo {
+            x: cx + inner-r * cos(a0); y: cy + inner-r * sin(a0);
+            radius-x: inner-r; radius-y: inner-r; sweep: false;
+            large-arc: (a1 - a0) > 180deg;
+        }
+        LineTo { x: cx + outer-r * cos(a0); y: cy + outer-r * sin(a0); }
+        fill: SigmaTheme.accent-red-dim.with-alpha(0.42);
+        stroke-width: 0;
+    }
+
+    for i[index] in [0, 1, 2, 3, 4, 5, 6]: Path {
+        width: 100%; height: 100%;
+        viewbox-width: 200; viewbox-height: 200;
+        property <float> t: root.redline-start + (i / 6.0) * (1.0 - root.redline-start);
+        property <angle> ha: root.start-angle + t * root.sweep;
+        MoveTo { x: cx + inner-r * cos(ha); y: cy + inner-r * sin(ha); }
+        LineTo { x: cx + outer-r * cos(ha); y: cy + outer-r * sin(ha); }
+        stroke: SigmaTheme.accent-red.with-alpha(0.28);
+        stroke-width: 0.5px;
+    }
+
+    Path {
+        width: 100%; height: 100%;
+        viewbox-width: 200; viewbox-height: 200;
+        MoveTo { x: cx + inner-r * cos(0deg); y: cy + inner-r * sin(0deg); }
+        ArcTo {
+            x: cx + inner-r * cos(0deg); y: cy + inner-r * sin(0deg);
+            radius-x: inner-r; radius-y: inner-r; sweep: true; large-arc: true;
+        }
+        fill: SigmaTheme.tft;
+        stroke-width: 0;
+    }
+
+    Path {
+        width: 100%; height: 100%;
+        viewbox-width: 200; viewbox-height: 200;
+        MoveTo { x: cx + outer-r * cos(0deg); y: cy + outer-r * sin(0deg); }
+        ArcTo {
+            x: cx + outer-r * cos(0deg); y: cy + outer-r * sin(0deg);
+            radius-x: outer-r; radius-y: outer-r; sweep: true; large-arc: true;
+        }
+        stroke: SigmaTheme.ink; stroke-width: 1px;
+    }
+
+    Path {
+        width: 100%; height: 100%;
+        viewbox-width: 200; viewbox-height: 200;
+        MoveTo { x: cx + inner-r * cos(0deg); y: cy + inner-r * sin(0deg); }
+        ArcTo {
+            x: cx + inner-r * cos(0deg); y: cy + inner-r * sin(0deg);
+            radius-x: inner-r; radius-y: inner-r; sweep: true; large-arc: true;
+        }
+        stroke: SigmaTheme.ink; stroke-width: 1px;
+    }
+
+    if root.ratio > 0.02: Path {
+        width: 100%; height: 100%;
+        viewbox-width: 200; viewbox-height: 200;
+        property <angle> na: root.needle-angle;
+        MoveTo { x: cx + inner-r * cos(root.start-angle); y: cy + inner-r * sin(root.start-angle); }
+        ArcTo {
+            x: cx + inner-r * cos(na); y: cy + inner-r * sin(na);
+            radius-x: inner-r; radius-y: inner-r; sweep: true;
+            large-arc: root.trail-large-arc;
+        }
+        LineTo { x: cx + tick-r0 * cos(na); y: cy + tick-r0 * sin(na); }
+        ArcTo {
+            x: cx + tick-r0 * cos(root.start-angle); y: cy + tick-r0 * sin(root.start-angle);
+            radius-x: tick-r0; radius-y: tick-r0; sweep: false;
+            large-arc: root.trail-large-arc;
+        }
+        LineTo { x: cx + inner-r * cos(root.start-angle); y: cy + inner-r * sin(root.start-angle); }
+        fill: SigmaTheme.accent-red.with-alpha(0.18 + root.ratio * 0.22);
+        stroke-width: 0;
+    }
+
+    for tick[index] in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]: Path {
+        width: 100%; height: 100%;
+        viewbox-width: 200; viewbox-height: 200;
+        property <float> tr: (tick * 1000 - root.min-rpm) / (root.max-rpm - root.min-rpm);
+        property <angle> ta: root.start-angle + tr * root.sweep;
+        MoveTo { x: cx + tick-r0 * cos(ta); y: cy + tick-r0 * sin(ta); }
+        LineTo { x: cx + tick-r1 * cos(ta); y: cy + tick-r1 * sin(ta); }
+        stroke: tick >= 11 ? SigmaTheme.accent-red : SigmaTheme.ink;
+        stroke-width: tick >= 11 ? 1px : 0.7px;
+    }
+
+    for value[index] in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]: Text {
+        property <float> nr: (value * 1000 - root.min-rpm) / (root.max-rpm - root.min-rpm);
+        property <angle> na: root.start-angle + nr * root.sweep;
+        property <length> rad: parent.width / 2 * (root.num-r / 100);
+        x: parent.width / 2 + rad * cos(na) - self.preferred-width / 2;
+        y: parent.height / 2 + rad * sin(na) - self.preferred-height / 2;
+        text: value;
+        font-size: value <= 6 ? 13px : (value >= 11 ? 18px : 15px);
+        font-weight: 800;
+        font-italic: true;
+        color: value >= 11 ? SigmaTheme.accent-red : SigmaTheme.ink;
+        horizontal-alignment: center;
+    }
+
+    Text {
+        x: parent.width / 2 - self.preferred-width / 2;
+        y: parent.height / 2 - self.preferred-height / 2;
+        text: root.gear <= 0 ? "N" : root.gear;
+        font-size: parent.width * 0.2;
+        font-weight: 800;
+        font-italic: true;
+        color: SigmaTheme.ink;
+        horizontal-alignment: center;
+    }
+
+    Path {
+        width: 100%; height: 100%;
+        viewbox-width: 200; viewbox-height: 200;
+        MoveTo {
+            x: cx + inner-r * cos(root.needle-angle);
+            y: cy + inner-r * sin(root.needle-angle);
+        }
+        LineTo {
+            x: cx + tick-r1 * cos(root.needle-angle);
+            y: cy + tick-r1 * sin(root.needle-angle);
+        }
+        stroke: SigmaTheme.accent-red; stroke-width: 3.5px;
+    }
+}
+
+export component ClassicTach inherits Rectangle {
+    in property <float> rpm: 1200;
+    in property <int> gear: 0;
+    in property <string> riding-mode: "SPORT";
+    in property <int> dtc: 3;
+    in property <int> dwc: 3;
+    in property <int> dsc: 2;
+    in property <int> min-rpm: 0;
+    in property <int> max-rpm: 12000;
+    in property <length> shift-left: 0px;
+
+    width: 100%;
+    height: 100%;
+    background: transparent;
+
+    private property <length> margin: 18px;
+    private property <length> gauge-size: min(root.width, root.height) - 2 * margin;
+    private property <length> cluster-right: root.width - margin - root.shift-left;
+    private property <length> gauge-left: cluster-right - gauge-size;
+    private property <length> gauge-top: (root.height - gauge-size) / 2;
+    // 9 o'clock outer ring edge (outer-r=96, viewbox 200)
+    private property <length> dial-nine-x: gauge-left + gauge-size * 4 / 200;
+    private property <length> sport-gap: root.width / 110; // ~1 mm on 110 mm-wide TFT
+
+    GaugeFace {
+        x: gauge-left;
+        y: gauge-top;
+        width: gauge-size;
+        height: gauge-size;
+        rpm: root.rpm;
+        gear: root.gear;
+        min-rpm: root.min-rpm;
+        max-rpm: root.max-rpm;
+    }
+
+    SportTab {
+        x: dial-nine-x - sport-gap - 92px;
+        y: gauge-top + gauge-size / 2 - 13px;
+        mode: root.riding-mode;
+    }
+
+    Text {
+        x: cluster-right - 86px;
+        y: root.height - margin - 28px;
+        text: "RPM X 1000";
+        font-size: 8px;
+        font-weight: 600;
+        color: SigmaTheme.ink-muted;
+    }
+
+    ElectronicsPanel {
+        x: cluster-right - 98px;
+        y: root.height - margin - 72px;
+        dtc: root.dtc;
+        dwc: root.dwc;
+        dsc: root.dsc;
+    }
+}

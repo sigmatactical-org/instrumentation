@@ -1,0 +1,240 @@
+import { SigmaTheme } from "theme.slint";
+import { ClassicTach } from "widgets/classic_tach.slint";
+
+component TripLine inherits Rectangle {
+    in property <string> label;
+    in property <string> value;
+
+    height: 16px;
+    width: 210px;
+    background: transparent;
+
+    Text {
+        y: 1px;
+        text: root.label;
+        font-size: 11px;
+        font-weight: 600;
+        font-italic: true;
+        color: SigmaTheme.ink-muted;
+    }
+    Text {
+        x: 128px;
+        y: 1px;
+        text: root.value;
+        font-size: 11px;
+        font-weight: 800;
+        font-italic: true;
+        color: SigmaTheme.ink;
+    }
+}
+
+component Thermometer inherits Rectangle {
+    width: 10px;
+    height: 16px;
+    background: transparent;
+
+    Rectangle {
+        x: 3px; y: 0px; width: 4px; height: 10px;
+        background: SigmaTheme.ink-muted;
+    }
+    Rectangle {
+        x: 1px; y: 10px; width: 8px; height: 6px;
+        border-radius: 4px;
+        background: SigmaTheme.ink-muted;
+    }
+}
+
+component HeadlightIcon inherits Rectangle {
+    width: 18px;
+    height: 14px;
+    background: transparent;
+
+    Path {
+        width: 100%; height: 100%;
+        viewbox-width: 18; viewbox-height: 14;
+        MoveTo { x: 2; y: 7; }
+        LineTo { x: 7; y: 2; }
+        LineTo { x: 7; y: 12; }
+        LineTo { x: 2; y: 7; }
+        stroke: SigmaTheme.ink-muted; stroke-width: 1px;
+    }
+    Path {
+        width: 100%; height: 100%;
+        viewbox-width: 18; viewbox-height: 14;
+        MoveTo { x: 7; y: 4; }
+        LineTo { x: 15; y: 7; }
+        LineTo { x: 7; y: 10; }
+        stroke: SigmaTheme.ink-muted; stroke-width: 1px;
+    }
+}
+
+component ModeIcon inherits Rectangle {
+    width: 16px;
+    height: 16px;
+    background: transparent;
+
+    Rectangle {
+        width: 100%; height: 100%;
+        border-width: 1px;
+        border-color: SigmaTheme.ink-muted;
+        background: transparent;
+        Text {
+            width: 100%; height: 100%;
+            text: "A";
+            font-size: 9px;
+            font-weight: 700;
+            color: SigmaTheme.ink-muted;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+component SusIcon inherits Rectangle {
+    width: 22px;
+    height: 22px;
+    background: transparent;
+
+    Path {
+        width: 100%; height: 100%;
+        viewbox-width: 22; viewbox-height: 22;
+        MoveTo { x: 4; y: 16; }
+        LineTo { x: 11; y: 4; }
+        LineTo { x: 18; y: 16; }
+        stroke: SigmaTheme.ink-muted; stroke-width: 1px;
+    }
+    Text {
+        x: 2px; y: 14px;
+        text: "DES";
+        font-size: 6px;
+        font-weight: 700;
+        color: SigmaTheme.ink-muted;
+    }
+}
+
+export component RoadDashboard inherits Rectangle {
+    in property <float> rpm: 1200;
+    in property <int> speed: 0;
+    in property <int> gear: 0;
+    in property <string> riding-mode: "SPORT";
+    in property <int> coolant-c: 72;
+    in property <int> odometer: 1245;
+    in property <float> trip1: 137.4;
+    in property <int> dtc: 3;
+    in property <int> dwc: 3;
+    in property <int> dsc: 2;
+    in property <bool> lap-active: false;
+    in property <bool> side-stand: true;
+
+    private property <float> temp-ratio: clamp((root.coolant-c - 40) / 80.0, 0, 1);
+    private property <string> speed-display:
+        root.speed < 10 ? "00" + root.speed :
+        root.speed < 100 ? "0" + root.speed :
+        root.speed > 999 ? "999" : root.speed;
+    private property <bool> speed-hot: root.speed >= 200;
+
+    background: SigmaTheme.bg;
+
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        background: SigmaTheme.tft;
+
+        Text { x: 14px; y: 12px; text: "LO"; font-size: 8px; font-weight: 600; color: SigmaTheme.ink-muted; }
+        Text { x: 156px; y: 12px; text: "HI"; font-size: 8px; font-weight: 600; color: SigmaTheme.ink-muted; }
+        Rectangle {
+            x: 32px; y: 14px; width: 118px; height: 6px;
+            background: SigmaTheme.temp-track;
+            Rectangle {
+                width: parent.width * root.temp-ratio;
+                height: parent.height;
+                background: SigmaTheme.temp-fill;
+            }
+        }
+        Thermometer { x: 160px; y: 10px; }
+
+        Text {
+            x: 14px; y: 32px;
+            text: root.lap-active ? "Lap On" : "Lap Off";
+            font-size: 12px;
+            font-italic: true;
+            color: SigmaTheme.ink-muted;
+        }
+
+        Text {
+            width: parent.width - 20px;
+            y: 14px;
+            text: root.speed-display;
+            font-size: 108px;
+            font-weight: 800;
+            font-italic: true;
+            color: root.speed-hot ? SigmaTheme.accent-red : SigmaTheme.ink;
+            horizontal-alignment: right;
+        }
+        Text {
+            width: parent.width - 24px;
+            y: 118px;
+            text: "km/h";
+            font-size: 16px;
+            font-weight: 700;
+            font-italic: true;
+            color: root.speed-hot ? SigmaTheme.accent-red : SigmaTheme.ink-muted;
+            horizontal-alignment: right;
+        }
+
+        ClassicTach {
+            x: 0px;
+            y: 0px;
+            width: parent.width;
+            height: parent.height;
+            shift-left: 175px;
+            rpm: root.rpm;
+            gear: root.gear;
+            riding-mode: root.riding-mode;
+            dtc: root.dtc;
+            dwc: root.dwc;
+            dsc: root.dsc;
+        }
+
+        if root.side-stand: Rectangle {
+            x: parent.width - 272px;
+            y: 6px;
+            width: 260px;
+            height: 136px;
+            background: SigmaTheme.side-stand-bg;
+            border-width: 2px;
+            border-color: SigmaTheme.ink-soft;
+            Text {
+                width: 100%;
+                height: 100%;
+                text: "SIDE STAND";
+                font-size: 34px;
+                font-weight: 800;
+                color: SigmaTheme.side-stand-fg;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            x: 14px; y: parent.height - 82px;
+            text: "SETTING MENU";
+            font-size: 10px;
+            font-weight: 700;
+            font-italic: true;
+            color: SigmaTheme.ink-muted;
+        }
+        TripLine {
+            x: 14px; y: parent.height - 62px;
+            label: "TOT"; value: root.odometer + " km";
+        }
+        TripLine {
+            x: 14px; y: parent.height - 44px;
+            label: "TRIP 1"; value: root.trip1 + " km";
+        }
+
+        HeadlightIcon { x: 14px; y: parent.height - 24px; }
+        ModeIcon { x: 38px; y: parent.height - 26px; }
+        SusIcon { x: 60px; y: parent.height - 28px; }
+    }
+}

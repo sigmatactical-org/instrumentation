@@ -1,0 +1,39 @@
+import { SigmaTheme } from "../theme.slint";
+
+export component HorizontalTach inherits Rectangle {
+    in property <float> rpm: 8000;
+    in property <int> max-rpm: 14000;
+
+    private property <float> ratio: clamp(root.rpm / root.max-rpm, 0, 1);
+    private property <color> fill-color:
+        root.ratio > 0.92 ? SigmaTheme.shift-red :
+        root.ratio > 0.82 ? SigmaTheme.shift-orange :
+        SigmaTheme.shift-white;
+
+    height: 36px;
+    background: transparent;
+
+    // Scale 0–14
+    HorizontalLayout {
+        spacing: 0px;
+        alignment: space-between;
+        for marker[index] in [0, 2, 4, 6, 8, 10, 12, 14]: Text {
+            text: marker;
+            font-size: 11px;
+            color: marker >= 12 ? #aa3333 : #404040;
+        }
+    }
+
+    Rectangle {
+        y: 16px;
+        width: parent.width;
+        height: 6px;
+        background: #181818;
+
+        Rectangle {
+            width: parent.width * root.ratio;
+            height: parent.height;
+            background: root.fill-color;
+        }
+    }
+}
