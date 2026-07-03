@@ -12,6 +12,10 @@ build = "build.rs"
 name = "sigma-dash"
 path = "src/main.rs"
 
+[features]
+# Fixed 800×480 panel window for local testing (matches co-pilot-imx8mp / co-pilot-qemu)
+virt-panel = []
+
 [dependencies]
 slint = { version = "1.16.1", default-features = false, features = ["renderer-femtovg", "backend-winit", "compat-1-2"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }

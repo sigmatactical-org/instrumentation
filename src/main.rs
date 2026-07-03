@@ -508,7 +508,16 @@ fn build_numerals() -> ModelRc<Tick> {
     ModelRc::new(Rc::new(VecModel::from(rows)))
 }
 
-fn configure_kiosk(ui: &SigmaDashboard) {
+fn configure_window(ui: &SigmaDashboard) {
+    const PANEL_WIDTH: u32 = 800;
+    const PANEL_HEIGHT: u32 = 480;
+
+    if cfg!(feature = "virt-panel") {
+        ui.window()
+            .set_size(slint::PhysicalSize::new(PANEL_WIDTH, PANEL_HEIGHT));
+        return;
+    }
+
     let kiosk = std::env::var("SLINT_FULLSCREEN")
         .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
         .unwrap_or(cfg!(co_pilot_embedded));
@@ -522,7 +531,7 @@ fn main() -> Result<(), slint::PlatformError> {
     let ui = SigmaDashboard::new()?;
 
     theme::init_from_env(&ui);
-    configure_kiosk(&ui);
+    configure_window(&ui);
 
     ui.set_track_path(gauge::track_path());
     ui.set_redline_path(gauge::redline_path());

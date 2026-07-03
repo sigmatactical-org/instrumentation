@@ -116,7 +116,7 @@ Sibling checkouts under `embedded/` (Scarthgap / Yocto 5.0):
 
 | Directory | Source |
 |-----------|--------|
-| `poky` | `git://git.yoctoproject.org/poky` (branch `scarthgap`) |
+| `poky` | `https://git.yoctoproject.org/poky` (branch `scarthgap`) |
 | `meta-openembedded` | [openembedded/meta-openembedded](https://github.com/openembedded/meta-openembedded) |
 | `meta-freescale`, `meta-freescale-3rdparty` | Freescale meta layers |
 | `meta-rust`, `meta-clang`, `meta-rauc` | Rust toolchain, clang, OTA |
@@ -157,6 +157,22 @@ zcat build/tmp/deploy/images/co-pilot-imx8mp/co-pilot-image-co-pilot-imx8mp.wic.
   | sudo dd of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
+### Virtual testing (QEMU, 800×480)
+
+Same panel resolution as `co-pilot-imx8mp`, no NXP BSP:
+
+```bash
+source setup-environment.sh co-pilot-qemu
+bitbake co-pilot-image-virt
+./scripts/run-qemu.sh
+```
+
+For UI-only work without Yocto:
+
+```bash
+cargo virt
+```
+
 ### Rebuild UI only
 
 After changing this repo, rebuild just the cluster app (much faster than a full image):
@@ -193,10 +209,14 @@ The Yocto recipe passes `--cfg co_pilot_embedded`, which enables fullscreen even
 ### Desktop parity
 
 ```bash
-# windowed dev build
+# windowed dev build (default window size from app.slint)
 cargo run --bin sigma-dash
 
-# match target kiosk behaviour
+# fixed 800×480 panel — matches imx8mp / QEMU virt target
+cargo virt
+# equivalent: cargo run --bin sigma-dash --features virt-panel
+
+# match target kiosk behaviour (full monitor)
 SLINT_FULLSCREEN=1 SIGMA_DISPLAY_MODE=night cargo run --bin sigma-dash
 ```
 
