@@ -1,20 +1,31 @@
 slint::include_modules!();
 
+mod gauge;
+mod theme;
+
+use chrono::Local;
+use slint::{ModelRc, SharedString, VecModel};
 use std::cell::Cell;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 // Yamaha XSR900 GP (890 cc CP3) — red zone 11 250 r/min, ~235 km/h top speed
 const IDLE_RPM: f32 = 1_200.0;
-const REDLINE_RPM: f32 = 11_250.0;
 const REV_LIMIT_RPM: f32 = 11_500.0;
 const MAX_SPEED_KMH: f32 = 235.0;
 const SHIFT_PAUSE_S: f32 = 0.10;
 const TOP_SPEED_HOLD_S: f32 = 1.2;
 const SETTLE_S: f32 = 1.5;
+const NAV_BLOCKED_HINT_S: f32 = 2.0;
+const SLOW_UI_INTERVAL_S: f32 = 1.0;
+const DEFAULT_FUEL_PCT: f32 = 0.62;
+/// Upshift when acceleration falls to this (drag-limited plateau; avoids float stall).
+const DRAG_PLATEAU_ACCEL: f32 = 0.08;
+/// Upshift before hitting the drag wall when speed reaches this fraction of gear v_max.
+const VMAX_UPSHIFT_RATIO: f32 = 0.87;
 
-/// Upshift targets — stretch 1st, then ride the triple high.
-const SHIFT_UP_BY_GEAR: [f32; 7] = [0.0, 11_000.0, 10_500.0, 10_000.0, 9_500.0, 9_000.0, 8_500.0];
+/// Upshift targets — stretch 1st into the redline, then ride the triple high.
+const SHIFT_UP_BY_GEAR: [f32; 7] = [0.0, 11_300.0, 11_100.0, 10_350.0, 10_100.0, 9_400.0, 8_500.0];
 
 /// Downshift when RPM falls below these (higher in upper gears → visible gear stepping on decel).
 const SHIFT_DOWN_BY_GEAR: [f32; 7] = [0.0, 3_800.0, 4_200.0, 4_800.0, 5_500.0, 6_500.0, 7_800.0];
@@ -25,6 +36,19 @@ const GEARBOX: [f32; 6] = [2.667, 2.000, 1.619, 1.381, 1.190, 1.037];
 
 /// 120/70-17 rear
 const WHEEL_CIRC_M: f32 = 1.88;
+
+// Window index table — keep in sync with road_dashboard.slint and app.slint (keys 1–9).
+//   0  Systems        left panel   key 1
+//   1  Navigation     left panel   key 2
+//   2  Compass/GPS    left panel   key 3
+//   3  Diagnostics    left panel   key 4
+//   4  Connectivity   full-screen  key 5  (stopped only)
+//   5  Camera         full-screen  key 6  (stopped only)
+//   6  Maintenance    full-screen  key 7  (stopped only)
+//   7  Fuel           full-screen  key 8  (stopped only)
+//   8  Security       full-screen  key 9  (stopped only)
+const WIN_PANEL_MAX: i32 = 3;
+const WIN_COUNT: i32 = 9;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum DemoPhase {
@@ -45,6 +69,18 @@ struct SimulationState {
     hold_start_speed: Cell<f32>,
     settle_timer: Cell<f32>,
     last_tick: Cell<Option<Instant>>,
+    // demo-only derived state
+    fuel_pct: Cell<f32>,
+    prev_speed: Cell<f32>,
+    gforce: Cell<f32>,
+    demo_t: Cell<f32>,
+    // windowing
+    window: Cell<i32>,
+    nav_blocked_timer: Cell<f32>,
+    // push_ui caching
+    last_pushed_rpm: Cell<f32>,
+    last_pushed_speed: Cell<i32>,
+    slow_ui_accum: Cell<f32>,
 }
 
 impl Default for SimulationState {
@@ -59,6 +95,15 @@ impl Default for SimulationState {
             hold_start_speed: Cell::new(0.0),
             settle_timer: Cell::new(0.0),
             last_tick: Cell::new(None),
+            fuel_pct: Cell::new(DEFAULT_FUEL_PCT),
+            prev_speed: Cell::new(0.0),
+            gforce: Cell::new(0.0),
+            demo_t: Cell::new(0.0),
+            window: Cell::new(0),
+            nav_blocked_timer: Cell::new(0.0),
+            last_pushed_rpm: Cell::new(f32::NAN),
+            last_pushed_speed: Cell::new(-1),
+            slow_ui_accum: Cell::new(SLOW_UI_INTERVAL_S),
         }
     }
 }
@@ -73,6 +118,11 @@ impl SimulationState {
         self.hold_timer.set(0.0);
         self.hold_start_speed.set(0.0);
         self.settle_timer.set(0.0);
+        self.prev_speed.set(0.0);
+        self.gforce.set(0.0);
+        self.fuel_pct.set(DEFAULT_FUEL_PCT);
+        self.last_pushed_rpm.set(f32::NAN);
+        self.last_pushed_speed.set(-1);
     }
 
     fn begin_top_speed_hold(&self, speed: f32) {
@@ -81,20 +131,68 @@ impl SimulationState {
         self.phase.set(DemoPhase::TopSpeedHold);
     }
 
+    fn stopped(&self) -> bool {
+        self.speed_kmh.get() == 0.0
+    }
+
+    fn nav_next(&self) {
+        let cur = self.window.get();
+        let next = if self.stopped() {
+            (cur + 1).rem_euclid(WIN_COUNT)
+        } else {
+            (cur.clamp(0, WIN_PANEL_MAX) + 1).rem_euclid(WIN_PANEL_MAX + 1)
+        };
+        self.window.set(next);
+    }
+
+    fn nav_prev(&self) {
+        let cur = self.window.get();
+        let prev = if self.stopped() {
+            (cur - 1).rem_euclid(WIN_COUNT)
+        } else {
+            (cur.clamp(0, WIN_PANEL_MAX) - 1).rem_euclid(WIN_PANEL_MAX + 1)
+        };
+        self.window.set(prev);
+    }
+
+    fn nav_home(&self) {
+        self.window.set(0);
+    }
+
+    fn nav_select(&self, idx: i32) {
+        if !(0..WIN_COUNT).contains(&idx) {
+            return;
+        }
+        if idx > WIN_PANEL_MAX && !self.stopped() {
+            self.nav_blocked_timer.set(NAV_BLOCKED_HINT_S);
+            return;
+        }
+        self.window.set(idx);
+    }
+
+    fn tick_nav_blocked(&self, dt: f32) {
+        let t = self.nav_blocked_timer.get();
+        if t > 0.0 {
+            self.nav_blocked_timer.set((t - dt).max(0.0));
+        }
+    }
+
     fn step(&self, ui: &SigmaDashboard) {
         let now = Instant::now();
         let dt = self
             .last_tick
             .get()
             .map(|t| now.duration_since(t).as_secs_f32())
-            .unwrap_or(0.05)
+            .unwrap_or(0.016)
             .clamp(0.0, 0.1);
         self.last_tick.set(Some(now));
+        self.demo_t.set(self.demo_t.get() + dt);
+        self.tick_nav_blocked(dt);
 
         if self.shift_pause.get() > 0.0 {
             let pause = (self.shift_pause.get() - dt).max(0.0);
             self.shift_pause.set(pause);
-            self.push_ui(ui);
+            self.push_ui(ui, dt);
             return;
         }
 
@@ -187,21 +285,101 @@ impl SimulationState {
         }
 
         rpm = rpm.clamp(IDLE_RPM, REV_LIMIT_RPM);
+
+        let dv = (speed - self.prev_speed.get()) / 3.6;
+        let g = if dt > 0.0 { (dv / dt) / 9.81 } else { 0.0 };
+        let g_smooth = self.gforce.get() * 0.8 + g * 0.2;
+        self.gforce.set(g_smooth);
+        self.prev_speed.set(speed);
+
+        if speed > 0.0 {
+            let dist_km = speed * dt / 3600.0;
+            self.fuel_pct.set((self.fuel_pct.get() - dist_km / 300.0).max(0.0));
+        }
+
         self.speed_kmh.set(speed);
         self.gear.set(gear);
         self.rpm.set(rpm);
-        self.push_ui(ui);
+
+        if !self.stopped() && self.window.get() > WIN_PANEL_MAX {
+            self.window.set(0);
+        }
+
+        self.push_ui(ui, dt);
     }
 
-    fn push_ui(&self, ui: &SigmaDashboard) {
-        ui.set_rpm(self.rpm.get());
-        ui.set_speed(self.speed_kmh.get().round() as i32);
-        ui.set_gear(self.gear.get().clamp(0, 6));
-        ui.set_side_stand(self.speed_kmh.get() == 0.0 && self.gear.get() == 0);
+    fn push_ui(&self, ui: &SigmaDashboard, dt: f32) {
+        let rpm = self.rpm.get();
+        let speed = self.speed_kmh.get().round() as i32;
+        let gear = self.gear.get().clamp(0, 6);
+        let t = self.demo_t.get();
+
+        ui.set_rpm(rpm);
+        ui.set_speed(speed);
+        ui.set_gear(gear);
+        ui.set_at_redline(rpm >= gauge::REDLINE);
+        ui.set_side_stand(speed == 0 && gear == 0);
+        ui.set_current_window(self.window.get());
+        ui.set_nav_blocked_hint(self.nav_blocked_timer.get() > 0.0);
+
+        let prev_rpm = self.last_pushed_rpm.get();
+        if prev_rpm.is_nan() || (rpm - prev_rpm).abs() > 0.01 {
+            ui.set_swept_path(gauge::swept_path(rpm));
+            let (nl, ns, nr, no) = gauge::needle_paths(rpm);
+            ui.set_needle_left(nl);
+            ui.set_needle_spine(ns);
+            ui.set_needle_right(nr);
+            ui.set_needle_outline(no);
+            self.last_pushed_rpm.set(rpm);
+        }
+
+        if speed != self.last_pushed_speed.get() {
+            let (h, te, o) = speed_digits(speed);
+            ui.set_d_hundreds(h);
+            ui.set_d_tens(te);
+            ui.set_d_ones(o);
+            self.last_pushed_speed.set(speed);
+        }
+
+        ui.set_fuel_pct(self.fuel_pct.get());
+        ui.set_lean_angle(if speed > 20 { 22.0 * (t * 0.7).sin() } else { 0.0 });
+        ui.set_gforce(self.gforce.get());
+
+        let mut slow_accum = self.slow_ui_accum.get() + dt;
+        if slow_accum >= SLOW_UI_INTERVAL_S {
+            slow_accum %= SLOW_UI_INTERVAL_S;
+            self.push_slow_ui(ui, rpm, t);
+        }
+        self.slow_ui_accum.set(slow_accum);
+    }
+
+    fn push_slow_ui(&self, ui: &SigmaDashboard, rpm: f32, t: f32) {
+        ui.set_clock(clock_hhmm());
+
+        let warm = (t / 25.0).clamp(0.0, 1.0);
+        let coolant = 40.0 + warm * 46.0 + (rpm / gauge::MAX_RPM) * 6.0;
+        ui.set_coolant_c(coolant.round() as i32);
+        ui.set_oil_c((coolant + 10.0).round() as i32);
+
+        let battery = if rpm < 1_500.0 { 13.1 } else { 13.9 };
+        ui.set_battery_v(battery);
+        ui.set_can_load((20.0 + (rpm / gauge::MAX_RPM) * 34.0).round() as i32);
+
+        let heading = (t * 8.0).rem_euclid(360.0);
+        ui.set_heading(heading);
+        ui.set_heading_label(SharedString::from(heading_label(heading)));
+        ui.set_elevation((667.0 + 30.0 * (t * 0.05).sin()).round() as i32);
     }
 }
 
 fn total_ratio(gear: i32) -> f32 {
+    debug_assert!(
+        (1..=6).contains(&gear),
+        "total_ratio: gear must be 1..=6, got {gear}"
+    );
+    if !(1..=6).contains(&gear) {
+        return 1.0;
+    }
     PRIMARY_RATIO * GEARBOX[(gear - 1) as usize] * FINAL_DRIVE
 }
 
@@ -232,13 +410,20 @@ fn should_upshift(speed_kmh: f32, gear: i32, rpm: f32, accel: f32) -> bool {
     if gear >= 6 {
         return false;
     }
-    if rpm >= shift_up_rpm(gear) {
+    let target = shift_up_rpm(gear);
+    if rpm >= target {
         return true;
     }
-    if accel <= 0.0 && rpm > 6_000.0 {
+    // Drag-limited plateau — acceleration hovers near zero but never crosses it
+    // (floating-point equilibrium below the RPM upshift target).
+    if accel <= DRAG_PLATEAU_ACCEL && rpm > 6_000.0 {
         return true;
     }
-    speed_kmh >= gear_vmax(gear) * 0.90
+    // Approaching shift RPM with diminishing pull.
+    if rpm >= target * 0.96 && accel < 0.25 {
+        return true;
+    }
+    speed_kmh >= gear_vmax(gear) * VMAX_UPSHIFT_RATIO
 }
 
 fn should_downshift(gear: i32, rpm: f32) -> bool {
@@ -261,25 +446,68 @@ fn acceleration_ms2(speed_kmh: f32, gear: i32, rpm: f32, throttle: bool) -> f32 
     let v_max = gear_vmax(gear).max(1.0);
     let v_ratio = (speed_kmh / v_max).clamp(0.0, 1.0);
     let drag = 0.28 + 0.000_42 * v * v;
+    let redline = gauge::REDLINE;
 
     if throttle {
         let a_peak = 12.5 / (gear as f32).sqrt();
         let torque = torque_factor(rpm);
         let pull = if gear >= 6 {
-            let rpm_room = (1.0 - (rpm / REDLINE_RPM).powf(1.5)).max(0.08);
+            let rpm_room = (1.0 - (rpm / redline).powf(1.5)).max(0.08);
             a_peak * torque * rpm_room
         } else {
             a_peak * torque * (1.0 - v_ratio.powf(1.45))
         };
         pull - drag
     } else {
-        let engine_brake = 3.0 * (gear as f32).powf(0.55) * (rpm / REDLINE_RPM).powf(0.7);
+        let engine_brake = 3.0 * (gear as f32).powf(0.55) * (rpm / redline).powf(0.7);
         let aero_brake = 0.000_42 * v * v;
         -(engine_brake + drag * 0.5 + aero_brake)
     }
 }
 
-/// Full-screen kiosk when built for Co-Pilot (Wayland + Weston).
+fn speed_digits(speed: i32) -> (SharedString, SharedString, SharedString) {
+    let s = speed.clamp(0, 999);
+    let h = s / 100;
+    let t = (s / 10) % 10;
+    let o = s % 10;
+    let hs = if s >= 100 {
+        SharedString::from(format!("{h}"))
+    } else {
+        SharedString::from("")
+    };
+    let ts = if s >= 10 {
+        SharedString::from(format!("{t}"))
+    } else {
+        SharedString::from("")
+    };
+    let os = SharedString::from(format!("{o}"));
+    (hs, ts, os)
+}
+
+fn heading_label(deg: f32) -> &'static str {
+    const DIRS: [&str; 8] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+    let idx = (((deg.rem_euclid(360.0)) / 45.0).round() as usize) % 8;
+    DIRS[idx]
+}
+
+/// Local 24-hour clock (system timezone; on Co-Pilot this follows /etc/localtime).
+fn clock_hhmm() -> SharedString {
+    SharedString::from(Local::now().format("%H:%M").to_string())
+}
+
+fn build_numerals() -> ModelRc<Tick> {
+    let rows: Vec<Tick> = gauge::numerals()
+        .into_iter()
+        .map(|n| Tick {
+            x: n.x,
+            y: n.y,
+            label: SharedString::from(n.label),
+            redline: n.redline,
+        })
+        .collect();
+    ModelRc::new(Rc::new(VecModel::from(rows)))
+}
+
 fn configure_kiosk(ui: &SigmaDashboard) {
     let kiosk = std::env::var("SLINT_FULLSCREEN")
         .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
@@ -293,7 +521,15 @@ fn configure_kiosk(ui: &SigmaDashboard) {
 fn main() -> Result<(), slint::PlatformError> {
     let ui = SigmaDashboard::new()?;
 
+    theme::init_from_env(&ui);
     configure_kiosk(&ui);
+
+    ui.set_track_path(gauge::track_path());
+    ui.set_redline_path(gauge::redline_path());
+    ui.set_ticks_major(gauge::ticks_major());
+    ui.set_ticks_minor(gauge::ticks_minor());
+    ui.set_ticks_redline(gauge::ticks_redline());
+    ui.set_labels(build_numerals());
 
     let state = Rc::new(SimulationState::default());
 
@@ -303,9 +539,23 @@ fn main() -> Result<(), slint::PlatformError> {
     }
     {
         let state = state.clone();
-        ui.on_rpm_down(move || {
-            state.phase.set(DemoPhase::DecelRun);
-        });
+        ui.on_rpm_down(move || state.phase.set(DemoPhase::DecelRun));
+    }
+    {
+        let state = state.clone();
+        ui.on_nav_next(move || state.nav_next());
+    }
+    {
+        let state = state.clone();
+        ui.on_nav_prev(move || state.nav_prev());
+    }
+    {
+        let state = state.clone();
+        ui.on_nav_home(move || state.nav_home());
+    }
+    {
+        let state = state.clone();
+        ui.on_nav_select(move |idx| state.nav_select(idx));
     }
 
     let timer = slint::Timer::default();
@@ -313,7 +563,7 @@ fn main() -> Result<(), slint::PlatformError> {
     let tick_ui = ui.as_weak();
     timer.start(
         slint::TimerMode::Repeated,
-        Duration::from_millis(50),
+        Duration::from_millis(16),
         move || {
             if let Some(ui) = tick_ui.upgrade() {
                 tick_state.step(&ui);

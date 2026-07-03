@@ -1,0 +1,90 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame, StatRow, MeterBar } from "common.slint";
+
+component BarStat inherits VerticalLayout {
+    in property <string> label;
+    in property <string> value;
+    in property <float> ratio;
+    in property <color> level;
+
+    spacing: 3px;
+    StatRow {
+        label: root.label;
+        value: root.value;
+        value-color: root.level;
+        value-size: 22px;
+    }
+    MeterBar {
+        ratio: root.ratio;
+        fill: root.level;
+    }
+}
+
+export component SystemsWindow inherits Rectangle {
+    in property <float> fuel-pct: 0.62;
+    in property <int> coolant-c: 84;
+    in property <int> oil-c: 96;
+    in property <int> odometer: 1245;
+    in property <float> trip1: 137.4;
+    in property <float> trip2: 42.1;
+    in property <string> clock: "14:32";
+    in property <float> lean-angle: 0;
+    in property <float> gforce: 0;
+    in property <string> riding-mode: "SPORT";
+
+    property <color> fuel-level: root.fuel-pct < 0.12 ? SigmaTheme.accent-red-dim
+        : (root.fuel-pct < 0.25 ? SigmaTheme.accent-amber : SigmaTheme.dial-ink);
+    property <color> coolant-level: root.coolant-c >= 112 ? SigmaTheme.accent-red-dim
+        : (root.coolant-c >= 104 ? SigmaTheme.accent-amber : SigmaTheme.dial-ink);
+    property <color> oil-level: root.oil-c >= 135 ? SigmaTheme.accent-red-dim
+        : (root.oil-c >= 125 ? SigmaTheme.accent-amber : SigmaTheme.dial-ink);
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "SYSTEMS";
+        hint: root.riding-mode;
+
+        HorizontalLayout {
+            alignment: center;
+            opacity: SigmaTone.content-opacity;
+            Text {
+                text: root.clock;
+                color: SigmaTheme.dial-value;
+                font-size: 30px;
+                font-weight: 700;
+            }
+        }
+
+        BarStat {
+            label: "FUEL";
+            value: "\{round(root.fuel-pct * 100)}%";
+            ratio: root.fuel-pct;
+            level: root.fuel-level;
+        }
+        BarStat {
+            label: "COOLANT";
+            value: "\{root.coolant-c} °C";
+            ratio: (root.coolant-c - 40) / 80.0;
+            level: root.coolant-level;
+        }
+        BarStat {
+            label: "OIL";
+            value: "\{root.oil-c} °C";
+            ratio: (root.oil-c - 40) / 100.0;
+            level: root.oil-level;
+        }
+
+        Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+        StatRow { label: "ODO"; value: "\{root.odometer} km"; value-size: 22px; }
+        StatRow { label: "TRIP A"; value: "\{root.trip1} km"; value-size: 22px; }
+        StatRow { label: "TRIP B"; value: "\{root.trip2} km"; value-size: 22px; }
+
+        Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+        StatRow { label: "LEAN"; value: "\{round(root.lean-angle)}°"; value-size: 22px; }
+        StatRow { label: "G-FORCE"; value: "\{round(root.gforce * 10) / 10} g"; value-size: 22px; }
+
+        Rectangle { vertical-stretch: 1; }
+    }
+}

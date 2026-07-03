@@ -1,0 +1,104 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame, StatRow } from "common.slint";
+
+export component NavigationWindow inherits Rectangle {
+    in property <string> street: "Ruta N-340";
+    in property <string> next-turn: "Right";
+    in property <string> next-distance: "450 m";
+    in property <string> eta: "16:48";
+    in property <string> remaining: "23 km";
+    in property <bool> has-route: true;
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "NAVIGATION";
+        hint: root.has-route ? "ROUTE" : "IDLE";
+
+        if !root.has-route: VerticalLayout {
+            alignment: center;
+            Text {
+                text: "No active route";
+                color: SigmaTheme.dial-ink;
+                font-size: 26px;
+                font-weight: 700;
+                horizontal-alignment: center;
+            }
+            Text {
+                text: "Set a destination from the companion app";
+                color: SigmaTheme.dial-caption;
+                font-size: 10px;
+                font-weight: 600;
+                horizontal-alignment: center;
+                wrap: word-wrap;
+            }
+        }
+
+        if root.has-route: VerticalLayout {
+            spacing: 8px;
+            opacity: SigmaTone.content-opacity;
+
+            HorizontalLayout {
+                spacing: 10px;
+                Rectangle {
+                    width: 56px; height: 56px;
+                    border-radius: 8px;
+                    background: transparent;
+                    border-width: 1px;
+                    border-color: SigmaTheme.dial-rule;
+                    Path {
+                        width: 60%; height: 60%;
+                        x: (parent.width - self.width) / 2;
+                        y: (parent.height - self.height) / 2;
+                        viewbox-width: 24; viewbox-height: 24;
+                        MoveTo { x: 6; y: 20; }
+                        LineTo { x: 6; y: 10; }
+                        LineTo { x: 16; y: 10; }
+                        stroke: SigmaTheme.dial-ink; stroke-width: 2px;
+                        fill: transparent;
+                    }
+                    Path {
+                        width: 60%; height: 60%;
+                        x: (parent.width - self.width) / 2;
+                        y: (parent.height - self.height) / 2;
+                        viewbox-width: 24; viewbox-height: 24;
+                        MoveTo { x: 13; y: 6; }
+                        LineTo { x: 18; y: 10; }
+                        LineTo { x: 13; y: 14; }
+                        stroke: SigmaTheme.dial-ink; stroke-width: 2px;
+                        fill: transparent;
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    Text {
+                        text: root.next-distance;
+                        color: SigmaTheme.dial-value;
+                        font-size: 26px;
+                        font-weight: 800;
+                    }
+                    Text {
+                        text: root.next-turn;
+                        color: SigmaTheme.dial-label;
+                        font-size: 10px;
+                        font-weight: 600;
+                    }
+                }
+            }
+
+            Text {
+                text: root.street;
+                color: SigmaTheme.dial-ink;
+                font-size: 22px;
+                font-weight: 700;
+                overflow: elide;
+            }
+
+            Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+            StatRow { label: "ETA"; value: root.eta; value-size: 22px; }
+            StatRow { label: "REMAINING"; value: root.remaining; value-size: 22px; }
+        }
+
+        Rectangle { vertical-stretch: 1; }
+    }
+}

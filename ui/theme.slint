@@ -1,16 +1,77 @@
-// Matte-black instrument cluster palette
+// Runtime-configurable palette and tone. Defaults match the night preset;
+// Rust (src/theme.rs) applies day / dusk / night via SIGMA_DISPLAY_MODE.
+
 export global SigmaTheme {
-    out property <color> bg: #141414;
-    out property <color> tft: #000000;
-    out property <color> ink: #eeeeee;
-    out property <color> ink-soft: #cccccc;
-    out property <color> ink-muted: #888888;
-    out property <color> ink-faint: #555555;
-    // Single accent red — needle, trail, redline zone, high speed
-    out property <color> accent-red: #b85858;
-    out property <color> accent-red-dim: #7a3838;
-    out property <color> side-stand-bg: #2a2a2a;
-    out property <color> side-stand-fg: #dddddd;
-    out property <color> temp-track: #333333;
-    out property <color> temp-fill: #777777;
+    in-out property <color> bg: #141414;
+    in-out property <color> tft: #000000;
+
+    in-out property <color> ink: #eeeeee;
+    in-out property <color> ink-soft: #cccccc;
+    in-out property <color> ink-muted: #888888;
+    in-out property <color> ink-faint: #555555;
+
+    // Dial face (primary instrument)
+    in-out property <color> dial-face: #8a8a92;
+    in-out property <color> dial-gear: #b6b6be;
+
+    // Panel readouts (night defaults)
+    in-out property <color> dial-ink: #585860;
+    in-out property <color> dial-value: #6a6a72;
+    in-out property <color> dial-label: #383840;
+    in-out property <color> dial-whisper: #242428;
+    in-out property <color> dial-caption: #34343a;
+    in-out property <color> dial-rule: #18181c;
+
+    // Dial chrome (rpm_dial.slint)
+    in-out property <color> dial-bezel: #101014;
+    in-out property <color> dial-bezel-border: #1e1e21;
+    in-out property <color> dial-face-bg: #0a0a0c;
+    in-out property <color> dial-gear-ring: #3e3e46;
+    in-out property <color> dial-track: #26262b;
+    in-out property <color> dial-tick-minor: #33333a;
+    in-out property <color> dial-tick-major: #5a5a62;
+    in-out property <color> dial-swept: #7a1a14;
+    in-out property <color> needle-left: #6a4a48;
+    in-out property <color> needle-right: #3a2422;
+    in-out property <color> needle-spine: #b85858;
+    in-out property <color> needle-outline: #000000;
+
+    in-out property <color> accent-red: #b85858;
+    in-out property <color> accent-red-dim: #522828;
+    in-out property <color> redline-bright: #ff2a1e;
+    in-out property <color> redline-bright-dim: #b31810;
+    in-out property <color> redline-needle-tip: #ff6b60;
+
+    in-out property <color> side-stand-bg: #0a0a0c;
+    in-out property <color> side-stand-fg: #8a8a92;
+    in-out property <color> temp-track: #1a1a1e;
+    in-out property <color> temp-fill: #44444c;
+
+    in-out property <color> panel-bg: #0c0c0f;
+    in-out property <color> panel-raise: #0a0a0c;
+    in-out property <color> panel-border: #1e1e22;
+    in-out property <color> panel-line: #1e1e22;
+    in-out property <color> panel-title: #44444c;
+    in-out property <color> camera-feed-bg: #050506;
+
+    in-out property <color> accent-green: #3a4a42;
+    in-out property <color> accent-amber: #4a4438;
+    in-out property <color> accent-blue: #3a424a;
+}
+
+// Opacity tier — night defaults; overridden per display mode from Rust.
+export global SigmaTone {
+    in-out property <float> title-opacity: 0.48;
+    in-out property <float> divider-opacity: 0.18;
+    in-out property <float> stat-opacity: 0.82;
+    in-out property <float> content-opacity: 0.76;
+    in-out property <float> bar-opacity: 0.58;
+    in-out property <float> bar-fill-opacity: 0.40;
+    in-out property <float> chip-off-opacity: 0.38;
+    in-out property <float> chip-on-opacity: 0.68;
+    in-out property <float> speed-opacity: 0.76;
+    in-out property <float> hint-opacity: 0.58;
+    in-out property <float> compass-opacity: 0.48;
+    in-out property <float> side-stand-opacity: 0.62;
+    in-out property <float> toast-opacity: 0.44;
 }

@@ -1,0 +1,78 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame, StatRow, Chip } from "common.slint";
+
+export component ConnectivityWindow inherits Rectangle {
+    in property <bool> bt-connected: true;
+    in property <string> bt-device: "iPhone 15 Pro";
+    in property <int> phone-battery: 78;
+    in property <int> notifications: 3;
+    in property <bool> companion-connected: true;
+    in property <bool> wifi-connected: false;
+    in property <string> wifi-ssid: "—";
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "CONNECTIVITY";
+        hint: "STOPPED";
+
+        HorizontalLayout {
+            spacing: 24px;
+            opacity: SigmaTone.content-opacity;
+
+            VerticalLayout {
+                spacing: 8px;
+                width: 50%;
+                HorizontalLayout {
+                    spacing: 8px;
+                    Text { text: "Bluetooth"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 700; }
+                    Rectangle { horizontal-stretch: 1; }
+                    Chip { text: root.bt-connected ? "PAIRED" : "OFF"; on: root.bt-connected; }
+                }
+                StatRow { label: "DEVICE"; value: root.bt-device; value-size: 22px; }
+                StatRow { label: "PHONE BATTERY"; value: "\{root.phone-battery}%"; value-size: 22px; }
+                StatRow {
+                    label: "NOTIFICATIONS";
+                    value: "\{root.notifications}";
+                    value-color: root.notifications > 0 ? SigmaTheme.dial-value : SigmaTheme.dial-ink;
+                    value-size: 22px;
+                }
+
+                Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    Text { text: "Wi-Fi"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 700; }
+                    Rectangle { horizontal-stretch: 1; }
+                    Chip { text: root.wifi-connected ? "ON" : "OFF"; on: root.wifi-connected; }
+                }
+                StatRow { label: "NETWORK"; value: root.wifi-ssid; value-size: 22px; }
+            }
+
+            Rectangle { width: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+            VerticalLayout {
+                spacing: 8px;
+                horizontal-stretch: 1;
+                HorizontalLayout {
+                    spacing: 8px;
+                    Text { text: "Companion App"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 700; }
+                    Rectangle { horizontal-stretch: 1; }
+                    Chip { text: root.companion-connected ? "LINKED" : "—"; on: root.companion-connected; }
+                }
+                Text {
+                    text: root.companion-connected
+                        ? "Ride sync, route push and cloud backup active."
+                        : "Open the Sigma app on your phone to link.";
+                    color: SigmaTheme.dial-caption;
+                    font-size: 10px;
+                    font-weight: 600;
+                    wrap: word-wrap;
+                }
+                StatRow { label: "MEDIA"; value: "Now Playing ▸"; value-size: 22px; }
+                StatRow { label: "CALLS"; value: "Forwarded"; value-size: 22px; }
+
+                Rectangle { vertical-stretch: 1; }
+            }
+        }
+    }
+}

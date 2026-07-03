@@ -1,0 +1,61 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame, StatRow, MeterBar } from "common.slint";
+
+export component FuelWindow inherits Rectangle {
+    in property <float> fuel-pct: 0.62;
+    in property <float> tank-l: 14.0;
+    in property <int> range-km: 210;
+    in property <float> avg-l-100: 4.8;
+    in property <float> inst-l-100: 3.9;
+    in property <float> trip-fuel-l: 6.2;
+    in property <bool> reserve: false;
+
+    property <float> fuel-l: root.fuel-pct * root.tank-l;
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "FUEL";
+        hint: root.reserve ? "RESERVE" : "STOPPED";
+
+        HorizontalLayout {
+            spacing: 24px;
+
+            VerticalLayout {
+                spacing: 8px;
+                width: 46%;
+                opacity: SigmaTone.content-opacity;
+                Text {
+                    text: "\{round(root.fuel-pct * 100)}%";
+                    color: root.fuel-pct < 0.15 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-value;
+                    font-size: 44px;
+                    font-weight: 700;
+                }
+                MeterBar {
+                    ratio: root.fuel-pct;
+                    height: 6px;
+                    fill: root.fuel-pct < 0.15 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-ink;
+                }
+                StatRow { label: "IN TANK"; value: "\{round(root.fuel-l * 10) / 10} L"; value-size: 22px; }
+                StatRow { label: "CAPACITY"; value: "\{root.tank-l} L"; value-size: 22px; }
+            }
+
+            Rectangle { width: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+            VerticalLayout {
+                spacing: 8px;
+                horizontal-stretch: 1;
+                StatRow {
+                    label: "RANGE";
+                    value: "\{root.range-km} km";
+                    value-color: root.range-km < 30 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-value;
+                    value-size: 26px;
+                }
+                Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+                StatRow { label: "AVG CONSUMPTION"; value: "\{root.avg-l-100} L/100km"; value-size: 22px; }
+                StatRow { label: "INSTANT"; value: "\{root.inst-l-100} L/100km"; value-size: 22px; }
+                StatRow { label: "TRIP FUEL USED"; value: "\{root.trip-fuel-l} L"; value-size: 22px; }
+                Rectangle { vertical-stretch: 1; }
+            }
+        }
+    }
+}

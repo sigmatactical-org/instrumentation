@@ -1,0 +1,72 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame, StatRow, Chip } from "common.slint";
+
+export component SecurityWindow inherits Rectangle {
+    in property <bool> alarm-armed: true;
+    in property <bool> immobilizer: true;
+    in property <bool> gps-tracking: true;
+    in property <bool> tilt-sensor: true;
+    in property <string> last-event: "Armed · 14:02";
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "SECURITY";
+        hint: root.alarm-armed ? "ARMED" : "DISARMED";
+
+        HorizontalLayout {
+            spacing: 24px;
+
+            VerticalLayout {
+                spacing: 10px;
+                width: 50%;
+
+                Rectangle {
+                    height: 80px;
+                    border-radius: 6px;
+                    background: transparent;
+                    border-width: 1px;
+                    border-color: SigmaTheme.dial-rule;
+                    Text {
+                        width: 100%; height: 100%;
+                        text: root.alarm-armed ? "ALARM ARMED" : "ALARM OFF";
+                        color: root.alarm-armed ? SigmaTheme.dial-value : SigmaTheme.dial-ink;
+                        font-size: 26px;
+                        font-weight: 800;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+                StatRow { label: "LAST EVENT"; value: root.last-event; value-size: 22px; }
+            }
+
+            Rectangle { width: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+            VerticalLayout {
+                spacing: 8px;
+                horizontal-stretch: 1;
+                Text { text: "SUBSYSTEMS"; color: SigmaTheme.dial-whisper; font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    Chip { text: "IMMOBILIZER"; on: root.immobilizer; }
+                    Chip { text: "TILT"; on: root.tilt-sensor; }
+                }
+                HorizontalLayout {
+                    spacing: 8px;
+                    Chip { text: "GPS TRACKING"; on: root.gps-tracking; }
+                }
+
+                Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+                Text {
+                    text: "Geofence and motion alerts are pushed to the companion app in real time.";
+                    color: SigmaTheme.dial-caption;
+                    font-size: 10px;
+                    font-weight: 600;
+                    wrap: word-wrap;
+                }
+                Rectangle { vertical-stretch: 1; }
+            }
+        }
+    }
+}

@@ -1,0 +1,123 @@
+import { SigmaTheme } from "../theme.slint";
+
+export struct Tick {
+    x: length,
+    y: length,
+    label: string,
+    redline: bool,
+}
+
+component GaugePath inherits Path {
+    width: 100%;
+    height: 100%;
+    viewbox-x: 0;
+    viewbox-y: 0;
+    viewbox-width: 800;
+    viewbox-height: 480;
+    fill: transparent;
+}
+
+// RPM dial — centre 452,246  R=198 (must match CX/CY/R in src/gauge.rs).
+export component RpmDial inherits Rectangle {
+    in property <float> rpm: 0;
+    in property <int> gear: 0;
+    in property <bool> at-redline: false;
+
+    in property <string> track-path;
+    in property <string> redline-path;
+    in property <string> swept-path;
+    in property <string> ticks-major;
+    in property <string> ticks-minor;
+    in property <string> ticks-redline;
+    in property <string> needle-left;
+    in property <string> needle-spine;
+    in property <string> needle-right;
+    in property <string> needle-outline;
+    in property <[Tick]> labels;
+
+    background: transparent;
+
+    Rectangle {
+        x: 452px - 214px; y: 246px - 214px; width: 428px; height: 428px;
+        border-radius: 214px; background: SigmaTheme.dial-bezel;
+        border-width: 2px; border-color: SigmaTheme.dial-bezel-border;
+    }
+    Rectangle {
+        x: 452px - 202px; y: 246px - 202px; width: 404px; height: 404px;
+        border-radius: 202px; background: SigmaTheme.dial-face-bg;
+    }
+
+    Path {
+        width: 100%; height: 100%;
+        viewbox-x: 0; viewbox-y: 0; viewbox-width: 800; viewbox-height: 480;
+        commands: root.swept-path;
+        fill: root.at-redline ? SigmaTheme.redline-bright : SigmaTheme.dial-swept;
+        opacity: root.at-redline ? 0.42 : 0.28;
+    }
+
+    GaugePath { commands: root.track-path; stroke: SigmaTheme.dial-track; stroke-width: 2px; }
+    GaugePath {
+        commands: root.redline-path;
+        stroke: root.at-redline ? SigmaTheme.redline-bright : SigmaTheme.accent-red-dim;
+        stroke-width: 8px;
+    }
+    GaugePath { commands: root.ticks-minor; stroke: SigmaTheme.dial-tick-minor; stroke-width: 1.5px; }
+    GaugePath { commands: root.ticks-major; stroke: SigmaTheme.dial-tick-major; stroke-width: 3.5px; }
+    GaugePath {
+        commands: root.ticks-redline;
+        stroke: root.at-redline ? SigmaTheme.redline-bright : SigmaTheme.accent-red;
+        stroke-width: 3.5px;
+    }
+
+    for t in root.labels: Text {
+        x: t.x - self.width / 2;
+        y: t.y - self.height / 2;
+        text: t.label;
+        color: t.redline
+            ? (root.at-redline ? SigmaTheme.redline-bright : SigmaTheme.accent-red-dim)
+            : SigmaTheme.dial-face;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    GaugePath {
+        commands: root.needle-left;
+        fill: root.at-redline ? SigmaTheme.redline-bright : SigmaTheme.needle-left;
+    }
+    GaugePath {
+        commands: root.needle-right;
+        fill: root.at-redline ? SigmaTheme.redline-bright-dim : SigmaTheme.needle-right;
+    }
+    GaugePath {
+        commands: root.needle-spine;
+        fill: root.at-redline ? SigmaTheme.redline-needle-tip : SigmaTheme.needle-spine;
+    }
+    GaugePath {
+        commands: root.needle-outline;
+        stroke: SigmaTheme.needle-outline;
+        stroke-width: 2px;
+    }
+
+    Rectangle {
+        x: 452px - 58px; y: 246px - 58px; width: 116px; height: 116px;
+        border-radius: 58px; background: SigmaTheme.dial-face-bg;
+        border-width: 4px; border-color: SigmaTheme.dial-gear-ring;
+        Text {
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            text: root.gear == 0 ? "N" : "\{root.gear}";
+            color: root.gear == 0 ? SigmaTheme.dial-face : SigmaTheme.dial-gear;
+            font-size: 74px;
+            font-weight: 800;
+        }
+    }
+
+    Text {
+        x: 452px - self.width / 2;
+        y: 246px + 74px;
+        text: "RPM × 1000";
+        color: SigmaTheme.dial-caption;
+        font-size: 10px;
+        font-weight: 600;
+    }
+}

@@ -1,0 +1,74 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame, StatRow, MeterBar } from "common.slint";
+
+export component MaintenanceWindow inherits Rectangle {
+    in property <int> service-due-km: 3200;
+    in property <float> oil-life: 0.72;
+    in property <int> chain-since-km: 480;
+    in property <float> brake-front: 0.65;
+    in property <float> brake-rear: 0.80;
+    in property <int> tire-front-kpa: 230;
+    in property <int> tire-rear-kpa: 250;
+    in property <int> engine-hours: 214;
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "MAINTENANCE";
+        hint: "STOPPED";
+
+        HorizontalLayout {
+            spacing: 24px;
+
+            VerticalLayout {
+                spacing: 8px;
+                width: 50%;
+
+                VerticalLayout {
+                    spacing: 3px;
+                    StatRow {
+                        label: "OIL LIFE";
+                        value: "\{round(root.oil-life * 100)}%";
+                        value-color: root.oil-life < 0.2 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-value;
+                        value-size: 22px;
+                    }
+                    MeterBar { ratio: root.oil-life; fill: root.oil-life < 0.2 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-ink; }
+                }
+
+                VerticalLayout {
+                    spacing: 3px;
+                    StatRow { label: "FRONT BRAKE PAD"; value: "\{round(root.brake-front * 100)}%"; value-size: 22px; }
+                    MeterBar { ratio: root.brake-front; fill: root.brake-front < 0.2 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-ink; }
+                }
+                VerticalLayout {
+                    spacing: 3px;
+                    StatRow { label: "REAR BRAKE PAD"; value: "\{round(root.brake-rear * 100)}%"; value-size: 22px; }
+                    MeterBar { ratio: root.brake-rear; fill: root.brake-rear < 0.2 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-ink; }
+                }
+            }
+
+            Rectangle { width: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+            VerticalLayout {
+                spacing: 8px;
+                horizontal-stretch: 1;
+
+                StatRow {
+                    label: "NEXT SERVICE";
+                    value: "\{root.service-due-km} km";
+                    value-color: root.service-due-km < 500 ? SigmaTheme.accent-amber : SigmaTheme.dial-value;
+                    value-size: 22px;
+                }
+                StatRow { label: "CHAIN SINCE LUBE"; value: "\{root.chain-since-km} km"; value-size: 22px; }
+                StatRow { label: "ENGINE HOURS"; value: "\{root.engine-hours} h"; value-size: 22px; }
+
+                Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+                Text { text: "TIRE PRESSURE"; color: SigmaTheme.dial-whisper; font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+                StatRow { label: "FRONT"; value: "\{root.tire-front-kpa} kPa"; value-size: 22px; }
+                StatRow { label: "REAR"; value: "\{root.tire-rear-kpa} kPa"; value-size: 22px; }
+
+                Rectangle { vertical-stretch: 1; }
+            }
+        }
+    }
+}

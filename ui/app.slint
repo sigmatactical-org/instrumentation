@@ -1,5 +1,8 @@
 import { RoadDashboard } from "road_dashboard.slint";
-import { SigmaTheme } from "theme.slint";
+import { Tick } from "widgets/rpm_dial.slint";
+import { SigmaTheme, SigmaTone } from "theme.slint";
+
+export { Tick, SigmaTheme, SigmaTone }
 
 export component SigmaDashboard inherits Window {
     title: "Sigma Instrumentation";
@@ -10,37 +13,119 @@ export component SigmaDashboard inherits Window {
 
     callback rpm-up();
     callback rpm-down();
+    callback nav-next();
+    callback nav-prev();
+    callback nav-home();
+    callback nav-select(int);
 
-    in-out property <float> rpm: 1200;
-    in-out property <int> speed: 0;
-    in-out property <int> gear: 0;
-    in-out property <string> riding-mode: "SPORT";
-    in-out property <int> coolant-c: 72;
-    in-out property <int> odometer: 1245;
-    in-out property <float> trip1: 137.4;
-    in-out property <int> dtc: 3;
-    in-out property <int> dwc: 3;
-    in-out property <int> dsc: 2;
-    in-out property <bool> lap-active: false;
-    in-out property <bool> side-stand: true;
+    // vehicle / dial (Rust → UI only)
+    in property <float> rpm: 1200;
+    in property <int> speed: 0;
+    in property <int> gear: 0;
+    in property <bool> at-redline: false;
+    in property <bool> side-stand: true;
+    in property <string> riding-mode: "SPORT";
 
-    RoadDashboard {
-        rpm: root.rpm;
-        speed: root.speed;
-        gear: root.gear;
-        riding-mode: root.riding-mode;
-        coolant-c: root.coolant-c;
-        odometer: root.odometer;
-        trip1: root.trip1;
-        dtc: root.dtc;
-        dwc: root.dwc;
-        dsc: root.dsc;
-        lap-active: root.lap-active;
-        side-stand: root.side-stand;
-    }
+    in property <string> track-path;
+    in property <string> redline-path;
+    in property <string> swept-path;
+    in property <string> ticks-major;
+    in property <string> ticks-minor;
+    in property <string> ticks-redline;
+    in property <string> needle-left;
+    in property <string> needle-spine;
+    in property <string> needle-right;
+    in property <string> needle-outline;
+    in property <[Tick]> labels;
 
-    FocusScope {
-        KeyBinding { keys: @keys("+"); activated => { root.rpm-up(); } }
-        KeyBinding { keys: @keys("-"); activated => { root.rpm-down(); } }
+    in property <string> d-hundreds;
+    in property <string> d-tens;
+    in property <string> d-ones;
+
+    in property <int> current-window: 0;
+    in property <bool> nav-blocked-hint: false;
+
+    in property <string> clock: "14:32";
+    in property <float> fuel-pct: 0.62;
+    in property <int> coolant-c: 84;
+    in property <int> oil-c: 96;
+    in property <int> odometer: 1245;
+    in property <float> trip1: 137.4;
+    in property <float> trip2: 42.1;
+    in property <float> lean-angle: 0;
+    in property <float> gforce: 0;
+    in property <float> battery-v: 13.9;
+    in property <int> can-load: 22;
+    in property <int> dtc: 0;
+    in property <float> heading: 45;
+    in property <string> heading-label: "NE";
+    in property <int> elevation: 667;
+
+    forward-focus: fs;
+
+    fs := FocusScope {
+        key-pressed(e) => {
+            if (e.text == Key.RightArrow) { root.nav-next(); return accept; }
+            if (e.text == Key.LeftArrow) { root.nav-prev(); return accept; }
+            if (e.text == Key.UpArrow) { root.nav-home(); return accept; }
+            if (e.text == Key.Escape) { root.nav-home(); return accept; }
+            if (e.text == "+") { root.rpm-up(); return accept; }
+            if (e.text == "-") { root.rpm-down(); return accept; }
+            if (e.text == "1") { root.nav-select(0); return accept; }
+            if (e.text == "2") { root.nav-select(1); return accept; }
+            if (e.text == "3") { root.nav-select(2); return accept; }
+            if (e.text == "4") { root.nav-select(3); return accept; }
+            if (e.text == "5") { root.nav-select(4); return accept; }
+            if (e.text == "6") { root.nav-select(5); return accept; }
+            if (e.text == "7") { root.nav-select(6); return accept; }
+            if (e.text == "8") { root.nav-select(7); return accept; }
+            if (e.text == "9") { root.nav-select(8); return accept; }
+            return reject;
+        }
+
+        RoadDashboard {
+            width: 100%; height: 100%;
+            rpm: root.rpm;
+            speed: root.speed;
+            gear: root.gear;
+            at-redline: root.at-redline;
+            side-stand: root.side-stand;
+            riding-mode: root.riding-mode;
+
+            track-path: root.track-path;
+            redline-path: root.redline-path;
+            swept-path: root.swept-path;
+            ticks-major: root.ticks-major;
+            ticks-minor: root.ticks-minor;
+            ticks-redline: root.ticks-redline;
+            needle-left: root.needle-left;
+            needle-spine: root.needle-spine;
+            needle-right: root.needle-right;
+            needle-outline: root.needle-outline;
+            labels: root.labels;
+
+            d-hundreds: root.d-hundreds;
+            d-tens: root.d-tens;
+            d-ones: root.d-ones;
+
+            current-window: root.current-window;
+            nav-blocked-hint: root.nav-blocked-hint;
+
+            clock: root.clock;
+            fuel-pct: root.fuel-pct;
+            coolant-c: root.coolant-c;
+            oil-c: root.oil-c;
+            odometer: root.odometer;
+            trip1: root.trip1;
+            trip2: root.trip2;
+            lean-angle: root.lean-angle;
+            gforce: root.gforce;
+            battery-v: root.battery-v;
+            can-load: root.can-load;
+            dtc: root.dtc;
+            heading: root.heading;
+            heading-label: root.heading-label;
+            elevation: root.elevation;
+        }
     }
 }

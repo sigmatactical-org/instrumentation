@@ -1,0 +1,120 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame, StatRow } from "common.slint";
+
+export component CompassWindow inherits Rectangle {
+    in property <float> heading: 45;
+    in property <string> heading-label: "NE";
+    in property <string> lat: "40° 25′ 01″ N";
+    in property <string> lon: "3° 42′ 14″ W";
+    in property <int> elevation: 667;
+    in property <int> satellites: 11;
+    in property <bool> gps-fix: true;
+
+    pure function cardinal(a: int) -> string {
+        if (a == 0) { return "N"; }
+        if (a == 45) { return "NE"; }
+        if (a == 90) { return "E"; }
+        if (a == 135) { return "SE"; }
+        if (a == 180) { return "S"; }
+        if (a == 225) { return "SW"; }
+        if (a == 270) { return "W"; }
+        if (a == 315) { return "NW"; }
+        return "";
+    }
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "COMPASS / GPS";
+        hint: root.gps-fix ? "FIX \{root.satellites}" : "NO FIX";
+
+        HorizontalLayout {
+            alignment: center;
+            spacing: 6px;
+            opacity: SigmaTone.content-opacity;
+            Text {
+                text: "\{round(root.heading)}°";
+                color: SigmaTheme.dial-value;
+                font-size: 30px;
+                font-weight: 700;
+            }
+            Text {
+                text: root.heading-label;
+                color: SigmaTheme.dial-ink;
+                font-size: 22px;
+                font-weight: 700;
+                vertical-alignment: center;
+            }
+        }
+
+        strip := Rectangle {
+            height: 78px;
+            clip: true;
+            background: transparent;
+            border-radius: 4px;
+            border-width: 1px;
+            border-color: SigmaTheme.dial-rule;
+            opacity: SigmaTone.compass-opacity;
+
+            property <length> deg-px: self.width / 150;
+
+            for a in [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165,
+                      180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345]:
+            mark := Rectangle {
+                property <float> d: mod(a - root.heading + 540, 360) - 180;
+                property <bool> major: mod(a, 45) == 0;
+                x: strip.width / 2 + mark.d * strip.deg-px - self.width / 2;
+                y: 0; width: 40px; height: strip.height;
+                background: transparent;
+
+                if mark.major: Text {
+                    y: 2px;
+                    width: 100%;
+                    text: "\{a}";
+                    color: a == 0 ? SigmaTheme.dial-value : SigmaTheme.dial-label;
+                    font-size: 13px;
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                }
+                Rectangle {
+                    x: (parent.width - self.width) / 2;
+                    y: 24px;
+                    width: mark.major ? 2px : 1px;
+                    height: mark.major ? 18px : 10px;
+                    background: mark.major ? SigmaTheme.dial-ink : SigmaTheme.dial-whisper;
+                }
+                if mark.major: Text {
+                    y: 46px;
+                    width: 100%;
+                    text: root.cardinal(a);
+                    color: a == 0 ? SigmaTheme.dial-value : SigmaTheme.dial-ink;
+                    font-size: 16px;
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                }
+            }
+
+            Path {
+                x: parent.width / 2 - 7px; y: 0;
+                width: 14px; height: 9px;
+                viewbox-width: 14; viewbox-height: 9;
+                MoveTo { x: 7; y: 9; }
+                LineTo { x: 0; y: 0; }
+                LineTo { x: 14; y: 0; }
+                fill: SigmaTheme.dial-ink;
+            }
+            Rectangle {
+                x: parent.width / 2 - 1px; y: 2px;
+                width: 2px; height: parent.height - 4px;
+                background: SigmaTheme.dial-ink;
+            }
+        }
+
+        Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+        StatRow { label: "LAT"; value: root.lat; value-size: 22px; }
+        StatRow { label: "LON"; value: root.lon; value-size: 22px; }
+        StatRow { label: "ELEV"; value: "\{root.elevation} m"; value-size: 22px; }
+
+        Rectangle { vertical-stretch: 1; }
+    }
+}

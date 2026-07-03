@@ -1,0 +1,63 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame, StatRow, MeterBar, Chip } from "common.slint";
+
+export component DiagnosticsWindow inherits Rectangle {
+    in property <float> rpm: 1200;
+    in property <int> coolant-c: 84;
+    in property <int> oil-c: 96;
+    in property <float> battery-v: 13.9;
+    in property <int> can-load: 22;
+    in property <int> dtc: 0;
+    in property <bool> tc-active: false;
+    in property <bool> abs-active: false;
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "DIAGNOSTICS";
+        hint: root.dtc > 0 ? "\{root.dtc} DTC" : "OK";
+
+        StatRow { label: "ENGINE RPM"; value: "\{round(root.rpm)}"; value-size: 22px; }
+        StatRow { label: "COOLANT"; value: "\{root.coolant-c} °C"; value-size: 22px; }
+        StatRow { label: "OIL"; value: "\{root.oil-c} °C"; value-size: 22px; }
+        StatRow {
+            label: "BATTERY";
+            value: "\{round(root.battery-v * 10) / 10} V";
+            value-color: root.battery-v < 12.2 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-value;
+            value-size: 22px;
+        }
+
+        VerticalLayout {
+            spacing: 3px;
+            StatRow { label: "CAN-FD BUS"; value: "\{root.can-load}%"; value-size: 22px; }
+            MeterBar {
+                ratio: root.can-load / 100.0;
+                fill: root.can-load > 80 ? SigmaTheme.accent-amber : SigmaTheme.dial-ink;
+            }
+        }
+
+        Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+        Text {
+            text: "TRAFFIC";
+            color: SigmaTheme.dial-whisper;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        StatRow { label: "0x0A0 ENGINE"; value: "100 Hz"; value-size: 22px; }
+        StatRow { label: "0x0C0 THROTTLE"; value: "100 Hz"; value-size: 22px; }
+        StatRow { label: "0x120 WHEEL"; value: "50 Hz"; value-size: 22px; }
+        StatRow { label: "0x200 TEMP"; value: "10 Hz"; value-size: 22px; }
+
+        Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
+
+        HorizontalLayout {
+            spacing: 6px;
+            Chip { text: "ABS"; on: root.abs-active; on-color: SigmaTheme.dial-ink; }
+            Chip { text: "TC"; on: root.tc-active; on-color: SigmaTheme.dial-ink; }
+            Chip { text: "DTC"; on: root.dtc > 0; on-color: SigmaTheme.accent-red-dim; }
+        }
+
+        Rectangle { vertical-stretch: 1; }
+    }
+}
