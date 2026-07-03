@@ -208,4 +208,4 @@ SLINT_FULLSCREEN=1 SIGMA_DISPLAY_MODE=night cargo run --bin sigma-dash
 
 ## License
 
-Internal Sigma project — license TBD.
+Licensed **MIT OR Apache-2.0** (see `LICENSE-MIT` and `LICENSE-APACHE` in this directory).

@@ -1,7 +1,11 @@
 [package]
 name = "instrumentation"
 version = "0.1.0"
+description = "Sigma motorcycle instrument cluster UI (sigma-dash)"
 edition = "2024"
+license = "MIT OR Apache-2.0"
+authors = ["Sigma Tactical Group contributors <https://github.com/sigmatactical-org>"]
+publish = false
 build = "build.rs"
 
 [[bin]]
