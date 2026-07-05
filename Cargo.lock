@@ -646,16 +646,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "co-pilot-telemetry"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "dbc-rs",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "codemap"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2146,14 +2136,6 @@ name = "input-sys"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36eee07d8e02bd95bf52b2e642cf13d33701b94c6e4b04fbf1d1fb07e9cb19e7"
-
-[[package]]
-name = "instrumentation"
-version = "0.1.0"
-dependencies = [
- "slint",
- "slint-build",
-]
 
 [[package]]
 name = "integer-sqrt"
@@ -3829,9 +3811,27 @@ name = "sigma-racer"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "co-pilot-telemetry",
- "instrumentation",
+ "sigmaracer-instrumentation",
+ "sigmaracer-wingman-telemetry",
  "slint",
+]
+
+[[package]]
+name = "sigmaracer-instrumentation"
+version = "0.1.0"
+dependencies = [
+ "slint",
+ "slint-build",
+]
+
+[[package]]
+name = "sigmaracer-wingman-telemetry"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "dbc-rs",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -4221,7 +4221,7 @@ name = "testbed"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "instrumentation",
+ "sigmaracer-instrumentation",
  "slint",
 ]
 
@@ -4666,8 +4666,8 @@ name = "vehicle-service"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "co-pilot-telemetry",
  "mdf4-rs",
+ "sigmaracer-wingman-telemetry",
 ]
 
 [[package]]

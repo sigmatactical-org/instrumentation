@@ -1,7 +1,7 @@
 //! vehicle.service telemetry → sigma-dash UI bindings.
 
-use co_pilot_telemetry::{TelemetryClient, VehicleState};
-use instrumentation::{gauge, set_speed_readout, SigmaDashboard};
+use sigmaracer_wingman_telemetry::{TelemetryClient, VehicleState};
+use sigmaracer_instrumentation::{gauge, set_speed_readout, SigmaDashboard};
 use slint::ComponentHandle;
 use slint::SharedString;
 use std::cell::RefCell;

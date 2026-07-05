@@ -1,7 +1,7 @@
 //! Simulated ride for QEMU / bench (encodes → decodes through M7 draft codec).
 
-use co_pilot_telemetry::can::{decode_frame, encode_sim_frames};
-use co_pilot_telemetry::state::VehicleState;
+use sigmaracer_wingman_telemetry::can::{decode_frame, encode_sim_frames};
+use sigmaracer_wingman_telemetry::state::VehicleState;
 use std::time::Duration;
 
 pub struct Simulator {

@@ -6,8 +6,8 @@ mod sim;
 mod source;
 
 use broadcast::Broadcaster;
-use co_pilot_telemetry::protocol::{diff_vss, Message, SOCKET_PATH};
-use co_pilot_telemetry::state::VehicleState;
+use sigmaracer_wingman_telemetry::protocol::{diff_vss, Message, SOCKET_PATH};
+use sigmaracer_wingman_telemetry::state::VehicleState;
 use source::SignalSource;
 use std::env;
 use std::fs;
@@ -18,7 +18,7 @@ use std::time::{Duration, Instant};
 
 fn main() {
     if let Err(err) = run() {
-        eprintln!("co-pilot-vehicle: {err}");
+        eprintln!("sigmaracer-wingman-vehicle: {err}");
         std::process::exit(1);
     }
 }
@@ -47,7 +47,7 @@ fn run() -> Result<(), String> {
     let mut heartbeat_at = Instant::now();
 
     eprintln!(
-        "co-pilot-vehicle: listening on {socket_path} (source={})",
+        "sigmaracer-wingman-vehicle: listening on {socket_path} (source={})",
         source.name()
     );
 
@@ -97,7 +97,7 @@ fn accept_clients(
             }
             Err(err) if err.kind() == std::io::ErrorKind::WouldBlock => break,
             Err(err) => {
-                eprintln!("co-pilot-vehicle: accept: {err}");
+                eprintln!("sigmaracer-wingman-vehicle: accept: {err}");
                 break;
             }
         }

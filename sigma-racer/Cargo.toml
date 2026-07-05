@@ -1,6 +1,6 @@
 [package]
 name = "sigma-racer"
-description = "Sigma Racer product app — Co-Pilot cluster binary (sigma-dash)"
+description = "Sigma Racer product app — Wingman cluster binary (sigma-dash)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -13,8 +13,8 @@ name = "sigma-dash"
 path = "src/main.rs"
 
 [dependencies]
-instrumentation = { workspace = true }
-co-pilot-telemetry = { workspace = true }
+sigmaracer-instrumentation = { workspace = true }
+sigmaracer-wingman-telemetry = { workspace = true }
 slint = { workspace = true }
 chrono = { workspace = true }
 

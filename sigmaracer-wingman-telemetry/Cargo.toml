@@ -1,6 +1,6 @@
 [package]
-name = "co-pilot-telemetry"
-description = "Co-Pilot VSS telemetry protocol, CAN decode, and IPC client"
+name = "sigmaracer-wingman-telemetry"
+description = "Sigma Racer Wingman VSS telemetry protocol, CAN decode, and IPC client"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

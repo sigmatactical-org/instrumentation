@@ -1,4 +1,4 @@
-//! Sigma Racer — production instrument cluster for Co-Pilot / i.MX 8M Plus.
+//! Sigma Racer — production instrument cluster for Wingman / i.MX 8M Plus.
 //!
 //! Live vehicle data replaces the idle loop via CAN-FD from the M7 safety core.
 
@@ -6,7 +6,7 @@ mod telemetry;
 mod vehicle;
 
 use chrono::Local;
-use instrumentation::{
+use sigmaracer_instrumentation::{
     configure_window, init_gauge_art, theme, DisplayConfig, SigmaDashboard,
 };
 use slint::ComponentHandle;
@@ -23,7 +23,7 @@ fn main() -> Result<(), slint::PlatformError> {
     theme::init_from_env(&ui);
     configure_window(
         &ui,
-        DisplayConfig::embedded(cfg!(co_pilot_embedded)),
+        DisplayConfig::embedded(cfg!(sigmaracer_wingman_embedded)),
     );
     init_gauge_art(&ui);
 
@@ -53,7 +53,7 @@ fn main() -> Result<(), slint::PlatformError> {
 
 /// Fallback values until the first Snapshot arrives from vehicle.service.
 fn push_idle(ui: &SigmaDashboard) {
-    use instrumentation::{gauge, set_speed_readout};
+    use sigmaracer_instrumentation::{gauge, set_speed_readout};
     use vehicle::XSR900_GP;
 
     let profile = XSR900_GP;

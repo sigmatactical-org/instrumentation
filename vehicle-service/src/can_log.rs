@@ -1,6 +1,6 @@
 //! Optional MDF4 CAN logging via mdf4-rs CanDbcLogger.
 
-use co_pilot_telemetry::m7_dbc::m7_dbc;
+use sigmaracer_wingman_telemetry::m7_dbc::m7_dbc;
 use mdf4_rs::can::CanDbcLogger;
 use mdf4_rs::writer::VecWriter;
 use std::env;
@@ -27,7 +27,7 @@ impl CanLogger {
             .build()
             .unwrap_or_else(|err| panic!("CanDbcLogger: {err}"));
 
-        eprintln!("co-pilot-vehicle: CAN MDF4 logging to {path}");
+        eprintln!("sigmaracer-wingman-vehicle: CAN MDF4 logging to {path}");
         Some(Self {
             path: PathBuf::from(path),
             logger: Some(logger),
@@ -58,18 +58,18 @@ impl Drop for CanLogger {
                 }
                 match fs::write(&self.path, bytes) {
                     Ok(()) => eprintln!(
-                        "co-pilot-vehicle: wrote CAN log {}",
+                        "sigmaracer-wingman-vehicle: wrote CAN log {}",
                         self.path.display()
                     ),
                     Err(err) => {
                         eprintln!(
-                            "co-pilot-vehicle: failed to write {}: {err}",
+                            "sigmaracer-wingman-vehicle: failed to write {}: {err}",
                             self.path.display()
                         );
                     }
                 }
             }
-            Err(err) => eprintln!("co-pilot-vehicle: CAN log finalize: {err}"),
+            Err(err) => eprintln!("sigmaracer-wingman-vehicle: CAN log finalize: {err}"),
         }
     }
 }

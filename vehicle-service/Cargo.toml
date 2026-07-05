@@ -1,6 +1,6 @@
 [package]
 name = "vehicle-service"
-description = "Co-Pilot vehicle signal abstraction — CAN decode and VSS telemetry publisher"
+description = "Sigma Racer Wingman vehicle signal abstraction — CAN decode and VSS telemetry publisher"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,10 +8,10 @@ authors.workspace = true
 publish.workspace = true
 
 [[bin]]
-name = "co-pilot-vehicle"
+name = "sigmaracer-wingman-vehicle"
 path = "src/main.rs"
 
 [dependencies]
-co-pilot-telemetry = { path = "../co-pilot-telemetry" }
+sigmaracer-wingman-telemetry = { path = "../sigmaracer-wingman-telemetry" }
 mdf4-rs = { version = "0.3.2", default-features = false, features = ["std", "dbc", "can"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
