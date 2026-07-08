@@ -1,52 +1,24 @@
-//! Display modes — day / dusk / night, each with its own palette and opacity tier.
-//!
-//! Select via `SIGMA_DISPLAY_MODE` (preferred) or `SIGMA_UI_TONE` (alias):
-//!   night (default) · dusk · day
+//! Palette + opacity tier for one display mode.
 
 use slint::{Color, Global};
 
 use crate::{SigmaDashboard, SigmaTheme, SigmaTone};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum DisplayMode {
-    Day,
-    Dusk,
-    Night,
-}
-
-impl DisplayMode {
-    pub fn parse(s: &str) -> Self {
-        match s.trim().to_ascii_lowercase().as_str() {
-            "day" | "bright" | "daylight" => Self::Day,
-            "dusk" | "twilight" | "normal" | "default" | "std" => Self::Dusk,
-            _ => Self::Night, // night · stealth · dark · unknown
-        }
-    }
-
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Day => "day",
-            Self::Dusk => "dusk",
-            Self::Night => "night",
-        }
-    }
-}
+use super::color::rgb;
+use super::mode::DisplayMode;
 
 /// Full palette + opacity tier for one display mode.
 #[derive(Clone, Copy, Debug)]
 pub struct ThemePreset {
     pub mode: DisplayMode,
-    // panel readouts
     pub dial_ink: Color,
     pub dial_value: Color,
     pub dial_label: Color,
     pub dial_whisper: Color,
     pub dial_caption: Color,
     pub dial_rule: Color,
-    // dial face
     pub dial_face: Color,
     pub dial_gear: Color,
-    // dial chrome
     pub dial_bezel: Color,
     pub dial_bezel_border: Color,
     pub dial_face_bg: Color,
@@ -59,7 +31,6 @@ pub struct ThemePreset {
     pub needle_right: Color,
     pub needle_spine: Color,
     pub needle_outline: Color,
-    // accents
     pub accent_red: Color,
     pub accent_red_dim: Color,
     pub redline_bright: Color,
@@ -68,7 +39,6 @@ pub struct ThemePreset {
     pub accent_green: Color,
     pub accent_amber: Color,
     pub accent_blue: Color,
-    // opacity tier
     pub title_opacity: f32,
     pub divider_opacity: f32,
     pub stat_opacity: f32,
@@ -97,7 +67,6 @@ impl ThemePreset {
         }
     }
 
-    /// Sunlight — high contrast, full panel readability.
     pub fn day() -> Self {
         Self {
             mode: DisplayMode::Day,
@@ -145,7 +114,6 @@ impl ThemePreset {
         }
     }
 
-    /// Twilight — balanced ghost panel, dial still primary.
     pub fn dusk() -> Self {
         Self {
             mode: DisplayMode::Dusk,
@@ -193,7 +161,6 @@ impl ThemePreset {
         }
     }
 
-    /// Dark — maximum stealth; panel recedes, dial stays legible.
     pub fn night() -> Self {
         Self {
             mode: DisplayMode::Night,
@@ -291,32 +258,4 @@ impl ThemePreset {
         tone.set_side_stand_opacity(self.side_stand_opacity);
         tone.set_toast_opacity(self.toast_opacity);
     }
-}
-
-fn parse_mode_from_env() -> DisplayMode {
-    if let Ok(v) = std::env::var("SIGMA_DISPLAY_MODE") {
-        return DisplayMode::parse(&v);
-    }
-    if let Ok(v) = std::env::var("SIGMA_UI_TONE") {
-        return DisplayMode::parse(&v);
-    }
-    DisplayMode::Night
-}
-
-/// Load display mode from the environment and apply. Returns the preset used.
-pub fn init_from_env(ui: &SigmaDashboard) -> ThemePreset {
-    let preset = ThemePreset::by_mode(parse_mode_from_env());
-    preset.apply(ui);
-    preset
-}
-
-/// Apply a specific display mode (e.g. from a light sensor or user setting).
-pub fn apply_mode(ui: &SigmaDashboard, mode: DisplayMode) -> ThemePreset {
-    let preset = ThemePreset::by_mode(mode);
-    preset.apply(ui);
-    preset
-}
-
-const fn rgb(r: u8, g: u8, b: u8) -> Color {
-    Color::from_rgb_u8(r, g, b)
 }
