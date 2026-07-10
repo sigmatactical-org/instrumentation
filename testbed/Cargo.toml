@@ -1,6 +1,6 @@
 [package]
 name = "testbed"
-description = "Component testbed — ride simulation and desktop panel testing"
+description = "Component testbed — candump replay and desktop panel testing"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -12,13 +12,12 @@ build = "build.rs"
 name = "testbed"
 path = "src/main.rs"
 
-[features]
-# Fixed 800×480 panel window (matches sigma-racer-wingman-imx8mp / sigma-racer-wingman-qemu)
-virt-panel = []
-
 [dependencies]
 sigma-instrumentation = { workspace = true }
+sigma-racer-telemetry = { path = "../../sigma-racer-telemetry" }
 slint = { workspace = true }
 chrono = { workspace = true }
+rfd = "0.15"
+image = { version = "0.25", default-features = false, features = ["png"] }
 
 [build-dependencies]

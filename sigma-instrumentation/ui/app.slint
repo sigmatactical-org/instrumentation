@@ -1,7 +1,8 @@
+import "./fonts/operation-napalm-regular.ttf";
 import { RoadDashboard } from "road_dashboard.slint";
 import { Tick } from "widgets/rpm_dial.slint";
-import { BootSplash } from "widgets/boot_splash.slint";
 import { TelemetryOverlay } from "widgets/telemetry_overlay.slint";
+import { HarnessBar } from "widgets/harness_bar.slint";
 import { SigmaTheme, SigmaTone } from "theme.slint";
 
 export { Tick, SigmaTheme, SigmaTone }
@@ -9,9 +10,11 @@ export { Tick, SigmaTheme, SigmaTone }
 export component SigmaDashboard inherits Window {
     title: "Sigma Instrumentation";
     preferred-width: 800px;
-    preferred-height: 480px;
+    preferred-height: root.harness-visible ? 576px : 480px;
     background: SigmaTheme.bg;
     no-frame: true;
+    default-font-size: 14px;
+    // Operation Napalm is imported for labels only (WindowFrame / StatRow); values use the default face.
 
     callback rpm-up();
     callback rpm-down();
@@ -20,10 +23,28 @@ export component SigmaDashboard inherits Window {
     callback nav-home();
     callback nav-select(int);
 
+    // Testbed harness (hidden on the product cluster)
+    in property <bool> harness-visible: false;
+    callback pick-candump();
+    callback cycle-display-mode();
+    callback replay-rate-changed(float);
+    callback toggle-turn-left();
+    callback toggle-turn-right();
+    callback toggle-hazard();
+    in property <string> candump-path: "(baked sample)";
+    in property <string> display-mode-label: "day";
+    in-out property <float> replay-rate: 1.0;
+    in property <bool> turn-left: false;
+    in property <bool> turn-right: false;
+    in property <bool> signal-lit: false;
+    in property <string> signal-left-path;
+    in property <string> signal-right-path;
+
     // vehicle / dial (Rust → UI only)
     in property <float> rpm: 1200;
     in property <int> speed: 0;
     in property <int> gear: 0;
+    in property <string> gear-label: "N";
     in property <bool> at-redline: false;
     in property <bool> side-stand: true;
     in property <string> riding-mode: "SPORT";
@@ -39,10 +60,11 @@ export component SigmaDashboard inherits Window {
     in property <string> needle-right;
     in property <string> needle-outline;
     in property <[Tick]> labels;
+    in property <string> rpm-scale-caption: "RPM × 1000";
 
-    in property <string> d-hundreds;
-    in property <string> d-tens;
-    in property <string> d-ones;
+    in property <string> d-hundreds: "";
+    in property <string> d-tens: "";
+    in property <string> d-ones: "0";
 
     in property <int> current-window: 0;
     in property <bool> nav-blocked-hint: false;
@@ -66,86 +88,114 @@ export component SigmaDashboard inherits Window {
     in property <int> elevation: 667;
     in property <bool> telemetry-live: false;
 
-    in-out property <bool> boot-visible: true;
-
     forward-focus: fs;
 
-    fs := FocusScope {
-        key-pressed(e) => {
-            if (e.text == Key.RightArrow) { root.nav-next(); return accept; }
-            if (e.text == Key.LeftArrow) { root.nav-prev(); return accept; }
-            if (e.text == Key.UpArrow) { root.nav-home(); return accept; }
-            if (e.text == Key.Escape) { root.nav-home(); return accept; }
-            if (e.text == "+") { root.rpm-up(); return accept; }
-            if (e.text == "-") { root.rpm-down(); return accept; }
-            if (e.text == "1") { root.nav-select(0); return accept; }
-            if (e.text == "2") { root.nav-select(1); return accept; }
-            if (e.text == "3") { root.nav-select(2); return accept; }
-            if (e.text == "4") { root.nav-select(3); return accept; }
-            if (e.text == "5") { root.nav-select(4); return accept; }
-            if (e.text == "6") { root.nav-select(5); return accept; }
-            if (e.text == "7") { root.nav-select(6); return accept; }
-            if (e.text == "8") { root.nav-select(7); return accept; }
-            if (e.text == "9") { root.nav-select(8); return accept; }
-            return reject;
+    // Single absolute canvas — avoids VerticalLayout + parent.width = 0 off-screen bugs
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: SigmaTheme.bg;
+
+        fs := FocusScope {
+            x: 0;
+            y: 0;
+            width: 800px;
+            height: 480px;
+
+            key-pressed(e) => {
+                if (e.text == Key.RightArrow) { root.nav-next(); return accept; }
+                if (e.text == Key.LeftArrow) { root.nav-prev(); return accept; }
+                if (e.text == Key.UpArrow) { root.nav-home(); return accept; }
+                if (e.text == Key.Escape) { root.nav-home(); return accept; }
+                if (e.text == "+") { root.rpm-up(); return accept; }
+                if (e.text == "-") { root.rpm-down(); return accept; }
+                if (e.text == "1") { root.nav-select(0); return accept; }
+                if (e.text == "2") { root.nav-select(1); return accept; }
+                if (e.text == "3") { root.nav-select(2); return accept; }
+                if (e.text == "4") { root.nav-select(3); return accept; }
+                if (e.text == "5") { root.nav-select(4); return accept; }
+                if (e.text == "6") { root.nav-select(5); return accept; }
+                if (e.text == "7") { root.nav-select(6); return accept; }
+                if (e.text == "8") { root.nav-select(7); return accept; }
+                if (e.text == "9") { root.nav-select(8); return accept; }
+                return reject;
+            }
+
+            RoadDashboard {
+                width: 100%; height: 100%;
+                rpm: root.rpm;
+                speed: root.speed;
+                gear: root.gear;
+                gear-label: root.gear-label;
+                at-redline: root.at-redline;
+                side-stand: root.side-stand;
+                riding-mode: root.riding-mode;
+                turn-left: root.turn-left;
+                turn-right: root.turn-right;
+                signal-lit: root.signal-lit;
+                signal-left-path: root.signal-left-path;
+                signal-right-path: root.signal-right-path;
+
+                track-path: root.track-path;
+                redline-path: root.redline-path;
+                swept-path: root.swept-path;
+                ticks-major: root.ticks-major;
+                ticks-minor: root.ticks-minor;
+                ticks-redline: root.ticks-redline;
+                needle-left: root.needle-left;
+                needle-spine: root.needle-spine;
+                needle-right: root.needle-right;
+                needle-outline: root.needle-outline;
+                labels: root.labels;
+                rpm-scale-caption: root.rpm-scale-caption;
+
+                d-hundreds: root.d-hundreds;
+                d-tens: root.d-tens;
+                d-ones: root.d-ones;
+
+                current-window: root.current-window;
+                nav-blocked-hint: root.nav-blocked-hint;
+
+                clock: root.clock;
+                fuel-pct: root.fuel-pct;
+                coolant-c: root.coolant-c;
+                oil-c: root.oil-c;
+                odometer: root.odometer;
+                trip1: root.trip1;
+                trip2: root.trip2;
+                lean-angle: root.lean-angle;
+                gforce: root.gforce;
+                battery-v: root.battery-v;
+                can-load: root.can-load;
+                dtc: root.dtc;
+                abs-active: root.abs-active;
+                tc-active: root.tc-active;
+                heading: root.heading;
+                heading-label: root.heading-label;
+                elevation: root.elevation;
+                telemetry-live: root.telemetry-live;
+            }
+
+            TelemetryOverlay {
+                live: root.telemetry-live;
+            }
         }
 
-        RoadDashboard {
-            width: 100%; height: 100%;
-            rpm: root.rpm;
-            speed: root.speed;
-            gear: root.gear;
-            at-redline: root.at-redline;
-            side-stand: root.side-stand;
-            riding-mode: root.riding-mode;
-
-            track-path: root.track-path;
-            redline-path: root.redline-path;
-            swept-path: root.swept-path;
-            ticks-major: root.ticks-major;
-            ticks-minor: root.ticks-minor;
-            ticks-redline: root.ticks-redline;
-            needle-left: root.needle-left;
-            needle-spine: root.needle-spine;
-            needle-right: root.needle-right;
-            needle-outline: root.needle-outline;
-            labels: root.labels;
-
-            d-hundreds: root.d-hundreds;
-            d-tens: root.d-tens;
-            d-ones: root.d-ones;
-
-            current-window: root.current-window;
-            nav-blocked-hint: root.nav-blocked-hint;
-
-            clock: root.clock;
-            fuel-pct: root.fuel-pct;
-            coolant-c: root.coolant-c;
-            oil-c: root.oil-c;
-            odometer: root.odometer;
-            trip1: root.trip1;
-            trip2: root.trip2;
-            lean-angle: root.lean-angle;
-            gforce: root.gforce;
-            battery-v: root.battery-v;
-            can-load: root.can-load;
-            dtc: root.dtc;
-            abs-active: root.abs-active;
-            tc-active: root.tc-active;
-            heading: root.heading;
-            heading-label: root.heading-label;
-            elevation: root.elevation;
-            telemetry-live: root.telemetry-live;
-        }
-
-        TelemetryOverlay {
-            live: root.telemetry-live;
-        }
-
-        BootSplash {
-            visible: root.boot-visible;
-            width: 100%;
-            height: 100%;
+        if root.harness-visible: HarnessBar {
+            x: 0;
+            y: 480px;
+            width: 800px;
+            candump-path: root.candump-path;
+            display-mode-label: root.display-mode-label;
+            replay-rate <=> root.replay-rate;
+            turn-left: root.turn-left;
+            turn-right: root.turn-right;
+            pick-candump => { root.pick-candump(); }
+            cycle-display-mode => { root.cycle-display-mode(); }
+            replay-rate-changed(r) => { root.replay-rate-changed(r); }
+            toggle-turn-left => { root.toggle-turn-left(); }
+            toggle-turn-right => { root.toggle-turn-right(); }
+            toggle-hazard => { root.toggle-hazard(); }
         }
     }
 }

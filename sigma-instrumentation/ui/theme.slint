@@ -57,6 +57,9 @@ export global SigmaTheme {
     in-out property <color> accent-green: #3a4a42;
     in-out property <color> accent-amber: #4a4438;
     in-out property <color> accent-blue: #3a424a;
+    // Turn / hazard outer-ring flash
+    in-out property <color> signal-amber: #ffb000;
+    in-out property <color> signal-amber-dim: #5a4010;
 }
 
 // Opacity tier — night defaults; overridden per display mode from Rust.
@@ -69,7 +72,7 @@ export global SigmaTone {
     in-out property <float> bar-fill-opacity: 0.40;
     in-out property <float> chip-off-opacity: 0.38;
     in-out property <float> chip-on-opacity: 0.68;
-    in-out property <float> speed-opacity: 0.76;
+    in-out property <float> speed-opacity: 1.0;
     in-out property <float> hint-opacity: 0.58;
     in-out property <float> compass-opacity: 0.48;
     in-out property <float> side-stand-opacity: 0.62;

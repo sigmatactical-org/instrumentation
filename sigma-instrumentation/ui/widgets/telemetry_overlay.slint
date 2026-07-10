@@ -1,21 +1,24 @@
 import { SigmaTheme } from "../theme.slint";
 
+// Banner when vehicle telemetry is missing — must not wash out the dial.
 export component TelemetryOverlay inherits Rectangle {
     in property <bool> live: true;
 
     visible: !root.live;
     width: 100%;
-    height: 100%;
-    background: #00000088;
+    height: 36px;
+    y: 0;
+    background: #000000cc;
 
     Text {
         width: 100%;
-        y: parent.height / 2 - self.preferred-height / 2;
+        height: 100%;
         text: "NO VEHICLE DATA";
-        color: SigmaTheme.accent-red-dim;
-        font-size: 28px;
-        font-weight: 700;
+        color: #c86868;
+        font-size: 14px;
+        font-weight: 400;
         letter-spacing: 2px;
         horizontal-alignment: center;
+        vertical-alignment: center;
     }
 }

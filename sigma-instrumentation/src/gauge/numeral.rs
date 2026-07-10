@@ -1,7 +1,8 @@
 //! RPM scale numerals around the dial.
 
-use super::constants::{R, REDLINE_ZONE};
+use super::constants::R;
 use super::geometry::{angle_for, point};
+use super::scale::GaugeScale;
 
 pub struct Numeral {
     pub x: f32,
@@ -10,16 +11,26 @@ pub struct Numeral {
     pub redline: bool,
 }
 
-pub fn numerals() -> Vec<Numeral> {
-    (0..=12)
+pub fn numerals(scale: &GaugeScale) -> Vec<Numeral> {
+    let step = scale.major_step();
+    let count = (scale.max_rpm / step).round() as i32;
+    let zone = scale.redline_zone();
+
+    (0..=count)
         .map(|k| {
-            let rpm = k as f32 * 1000.0;
-            let (x, y) = point(angle_for(rpm), R * 0.72);
+            let rpm = k as f32 * step;
+            let (x, y) = point(angle_for(rpm, scale), R * 0.72);
+            let label_thousands = (rpm / 1_000.0).round() as i32;
+            let label = if step >= 1_000.0 {
+                format!("{label_thousands}")
+            } else {
+                format!("{:.1}", rpm / 1_000.0)
+            };
             Numeral {
                 x,
                 y,
-                label: format!("{k}"),
-                redline: rpm >= REDLINE_ZONE,
+                label,
+                redline: rpm >= zone,
             }
         })
         .collect()

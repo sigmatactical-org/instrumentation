@@ -18,8 +18,9 @@ export component WindowFrame inherits Rectangle {
             Text {
                 text: root.title;
                 color: SigmaTheme.dial-whisper;
-                font-size: 9px;
-                font-weight: 600;
+                font-family: "Operation Napalm";
+                font-size: 13px;
+                font-weight: 400;
                 letter-spacing: 1.5px;
             }
             Rectangle { horizontal-stretch: 1; }
@@ -27,7 +28,7 @@ export component WindowFrame inherits Rectangle {
                 text: root.hint;
                 color: SigmaTheme.dial-caption;
                 font-size: 9px;
-                font-weight: 600;
+                font-weight: 400;
             }
         }
         Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
@@ -47,8 +48,9 @@ export component StatRow inherits HorizontalLayout {
     Text {
         text: root.label;
         color: SigmaTheme.dial-label;
-        font-size: 9px;
-        font-weight: 600;
+        font-family: "Operation Napalm";
+        font-size: 13px;
+        font-weight: 400;
         letter-spacing: 0.5px;
         vertical-alignment: center;
     }
@@ -57,7 +59,7 @@ export component StatRow inherits HorizontalLayout {
         text: root.value;
         color: root.value-color;
         font-size: root.value-size;
-        font-weight: 700;
+        font-weight: 400;
         vertical-alignment: center;
     }
 }
@@ -103,8 +105,9 @@ export component Chip inherits Rectangle {
         Text {
             text: root.text;
             color: root.on ? SigmaTheme.dial-ink : SigmaTheme.dial-label;
-            font-size: 9px;
-            font-weight: 600;
+            font-family: "Operation Napalm";
+            font-size: 12px;
+            font-weight: 400;
             letter-spacing: 0.3px;
             vertical-alignment: center;
         }

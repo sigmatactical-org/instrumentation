@@ -1,0 +1,221 @@
+import { SigmaTheme } from "../theme.slint";
+
+/// Desktop-only strip under the cluster face (candump replay + display mode + signals).
+export component HarnessBar inherits Rectangle {
+    callback pick-candump();
+    callback cycle-display-mode();
+    callback replay-rate-changed(float);
+    callback toggle-turn-left();
+    callback toggle-turn-right();
+    callback toggle-hazard();
+
+    in property <string> candump-path: "(baked sample)";
+    in property <string> display-mode-label: "day";
+    in-out property <float> replay-rate: 1.0;
+    in property <bool> turn-left: false;
+    in property <bool> turn-right: false;
+
+    height: 96px;
+    background: #141418;
+
+    Rectangle {
+        y: 0;
+        width: 100%;
+        height: 1px;
+        background: #2a2a32;
+    }
+
+    property <length> pad: 12px;
+
+    // Path + browse
+    Text {
+        x: pad;
+        y: 10px;
+        width: 400px;
+        height: 18px;
+        text: "candump: " + root.candump-path;
+        color: SigmaTheme.dial-caption;
+        font-size: 11px;
+        font-weight: 400;
+        overflow: elide;
+    }
+
+    browse := TouchArea {
+        x: pad;
+        y: 34px;
+        width: 88px;
+        height: 28px;
+        clicked => { root.pick-candump(); }
+        Rectangle {
+            background: browse.pressed ? #3a3a44 : #2a2a34;
+            border-radius: 2px;
+            Text {
+                width: 100%; height: 100%;
+                text: "Browse…";
+                color: SigmaTheme.ink;
+                font-size: 12px;
+                font-weight: 400;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+
+    // Replay rate
+    Text {
+        x: 120px;
+        y: 38px;
+        width: 70px;
+        text: "rate " + (Math.floor(root.replay-rate * 10) / 10) + "×";
+        color: SigmaTheme.ink;
+        font-size: 12px;
+        font-weight: 400;
+        vertical-alignment: center;
+    }
+
+    rate-track := Rectangle {
+        x: 200px;
+        y: 46px;
+        width: 160px;
+        height: 6px;
+        background: #2a2a34;
+        border-radius: 2px;
+
+        Rectangle {
+            width: parent.width * ((root.replay-rate - 0.25) / 3.75);
+            height: 100%;
+            background: SigmaTheme.dial-gear;
+            border-radius: 2px;
+        }
+    }
+
+    TouchArea {
+        x: rate-track.x;
+        y: rate-track.y - 10px;
+        width: rate-track.width;
+        height: 26px;
+        moved => {
+            if (self.pressed) {
+                root.replay-rate = Math.max(0.25, Math.min(4.0, 0.25 + 3.75 * (self.mouse-x / self.width)));
+                root.replay-rate-changed(root.replay-rate);
+            }
+        }
+        clicked => {
+            root.replay-rate = Math.max(0.25, Math.min(4.0, 0.25 + 3.75 * (self.mouse-x / self.width)));
+            root.replay-rate-changed(root.replay-rate);
+        }
+    }
+
+    // Turn / hazard
+    Text {
+        x: 380px;
+        y: 10px;
+        width: 200px;
+        text: "signals";
+        color: SigmaTheme.dial-caption;
+        font-size: 10px;
+        font-weight: 400;
+    }
+
+    left-btn := TouchArea {
+        x: 380px;
+        y: 34px;
+        width: 56px;
+        height: 28px;
+        clicked => { root.toggle-turn-left(); }
+        Rectangle {
+            background: root.turn-left ? #5a4010 : (left-btn.pressed ? #3a3a44 : #2a2a34);
+            border-radius: 2px;
+            border-width: root.turn-left ? 1px : 0px;
+            border-color: SigmaTheme.signal-amber;
+            Text {
+                width: 100%; height: 100%;
+                text: "Left";
+                color: root.turn-left ? SigmaTheme.signal-amber : SigmaTheme.ink;
+                font-size: 12px;
+                font-weight: 400;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+
+    right-btn := TouchArea {
+        x: 444px;
+        y: 34px;
+        width: 56px;
+        height: 28px;
+        clicked => { root.toggle-turn-right(); }
+        Rectangle {
+            background: root.turn-right ? #5a4010 : (right-btn.pressed ? #3a3a44 : #2a2a34);
+            border-radius: 2px;
+            border-width: root.turn-right ? 1px : 0px;
+            border-color: SigmaTheme.signal-amber;
+            Text {
+                width: 100%; height: 100%;
+                text: "Right";
+                color: root.turn-right ? SigmaTheme.signal-amber : SigmaTheme.ink;
+                font-size: 12px;
+                font-weight: 400;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+
+    haz-btn := TouchArea {
+        x: 508px;
+        y: 34px;
+        width: 72px;
+        height: 28px;
+        clicked => { root.toggle-hazard(); }
+        Rectangle {
+            background: (root.turn-left && root.turn-right) ? #5a4010 : (haz-btn.pressed ? #3a3a44 : #2a2a34);
+            border-radius: 2px;
+            border-width: (root.turn-left && root.turn-right) ? 1px : 0px;
+            border-color: SigmaTheme.signal-amber;
+            Text {
+                width: 100%; height: 100%;
+                text: "Hazard";
+                color: (root.turn-left && root.turn-right) ? SigmaTheme.signal-amber : SigmaTheme.ink;
+                font-size: 12px;
+                font-weight: 400;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+
+    // Display mode cycle
+    mode := TouchArea {
+        x: parent.width - pad - 120px;
+        y: 34px;
+        width: 120px;
+        height: 28px;
+        clicked => { root.cycle-display-mode(); }
+        Rectangle {
+            background: mode.pressed ? #3a3a44 : #2a2a34;
+            border-radius: 2px;
+            Text {
+                width: 100%; height: 100%;
+                text: root.display-mode-label;
+                color: SigmaTheme.ink;
+                font-size: 12px;
+                font-weight: 400;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+
+    Text {
+        x: parent.width - pad - 120px;
+        y: 10px;
+        width: 120px;
+        text: "display mode";
+        color: SigmaTheme.dial-caption;
+        font-size: 10px;
+        font-weight: 400;
+        horizontal-alignment: center;
+    }
+}

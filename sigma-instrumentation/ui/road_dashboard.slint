@@ -1,6 +1,5 @@
 import { SigmaTheme, SigmaTone } from "theme.slint";
 import { RpmDial, Tick } from "widgets/rpm_dial.slint";
-import { SpeedReadout } from "widgets/speed_readout.slint";
 import { SystemsWindow } from "windows/systems.slint";
 import { NavigationWindow } from "windows/navigation.slint";
 import { CompassWindow } from "windows/compass_gps.slint";
@@ -46,9 +45,15 @@ export component RoadDashboard inherits Rectangle {
     in property <float> rpm: 1200;
     in property <int> speed: 0;
     in property <int> gear: 0;
+    in property <string> gear-label: "N";
     in property <bool> at-redline: false;
     in property <bool> side-stand: true;
     in property <string> riding-mode: "SPORT";
+    in property <bool> turn-left: false;
+    in property <bool> turn-right: false;
+    in property <bool> signal-lit: false;
+    in property <string> signal-left-path;
+    in property <string> signal-right-path;
 
     in property <string> track-path;
     in property <string> redline-path;
@@ -61,10 +66,11 @@ export component RoadDashboard inherits Rectangle {
     in property <string> needle-right;
     in property <string> needle-outline;
     in property <[Tick]> labels;
+    in property <string> rpm-scale-caption: "RPM × 1000";
 
-    in property <string> d-hundreds;
-    in property <string> d-tens;
-    in property <string> d-ones;
+    in property <string> d-hundreds: "";
+    in property <string> d-tens: "";
+    in property <string> d-ones: "0";
 
     in property <int> current-window: 0;
     in property <bool> nav-blocked-hint: false;
@@ -91,7 +97,10 @@ export component RoadDashboard inherits Rectangle {
     property <bool> stopped: root.speed == 0;
     property <bool> show-fullscreen: root.stopped && root.current-window >= 4;
     property <int> panel-window: root.current-window <= 3 ? root.current-window : 0;
-    property <bool> speed-hot: root.speed >= 200;
+    // Bottom-right system message slot (priority: side stand → nav hint)
+    property <string> system-message:
+        root.side-stand ? "SIDE STAND"
+        : (root.nav-blocked-hint && !root.stopped ? "Stop to open full-screen windows" : "");
 
     background: SigmaTheme.tft;
 
@@ -104,6 +113,7 @@ export component RoadDashboard inherits Rectangle {
             y: 0;
             rpm: root.rpm;
             gear: root.gear;
+            gear-label: root.gear-label;
             at-redline: root.at-redline;
             track-path: root.track-path;
             redline-path: root.redline-path;
@@ -116,16 +126,12 @@ export component RoadDashboard inherits Rectangle {
             needle-right: root.needle-right;
             needle-outline: root.needle-outline;
             labels: root.labels;
-        }
-
-        // Speed — centred above dial hub, inside upper face (design coords)
-        SpeedReadout {
-            x: 452px - self.width / 2;
-            y: 52px;
-            d-hundreds: root.d-hundreds;
-            d-tens: root.d-tens;
-            d-ones: root.d-ones;
-            hot: root.speed-hot;
+            rpm-scale-caption: root.rpm-scale-caption;
+            signal-left-path: root.signal-left-path;
+            signal-right-path: root.signal-right-path;
+            turn-left: root.turn-left;
+            turn-right: root.turn-right;
+            signal-lit: root.signal-lit;
         }
 
         // left panel — top/bottom aligned with dial bezel (centre 246, r 214)
@@ -167,51 +173,59 @@ export component RoadDashboard inherits Rectangle {
             }
         }
 
-        if root.side-stand: Rectangle {
-            x: 302px; y: 200px; width: 300px; height: 80px;
-            opacity: SigmaTone.side-stand-opacity;
-            background: transparent;
-            border-width: 1px;
-            border-color: SigmaTheme.dial-rule;
-            border-radius: 6px;
-            Text {
-                width: 100%; height: 100%;
-                text: "SIDE STAND";
-                font-size: 22px;
-                font-weight: 700;
-                color: SigmaTheme.dial-ink;
-                horizontal-alignment: center;
-                vertical-alignment: center;
-            }
-        }
-
-        if root.nav-blocked-hint && !root.stopped: Rectangle {
-            x: parent.width / 2 - self.width / 2;
-            y: parent.height - 36px;
-            width: toast.preferred-width + 24px;
-            height: 22px;
-            opacity: SigmaTone.toast-opacity;
-            background: transparent;
-            border-radius: 4px;
-            border-width: 1px;
-            border-color: SigmaTheme.dial-rule;
-            toast := Text {
-                x: 12px; y: 0; height: 100%;
-                text: "Stop to open full-screen windows";
-                color: SigmaTheme.dial-caption;
-                font-size: 9px;
-                font-weight: 600;
-                vertical-alignment: center;
-            }
-        }
-
         Text {
             x: 12px; y: parent.height - 2px - self.preferred-height;
             text: root.stopped ? "← → window   ↑ home   +/- demo" : "← → window   +/- demo";
             color: SigmaTheme.dial-whisper;
             font-size: 8px;
-            font-weight: 600;
+            font-weight: 400;
             opacity: SigmaTone.hint-opacity;
+        }
+
+        // TOP-RIGHT speed — outside the dial (match gear hub weight/size)
+        Text {
+            x: 540px;
+            y: 4px;
+            width: 220px;
+            height: 86px;
+            text: root.d-hundreds + root.d-tens + root.d-ones;
+            color: #ffffff;
+            font-size: 74px;
+            font-weight: 800;
+            horizontal-alignment: right;
+            vertical-alignment: center;
+        }
+        Text {
+            x: 764px;
+            y: 68px;
+            width: 28px;
+            text: "km/h";
+            color: #c8c8d0;
+            font-family: "Operation Napalm";
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        // BOTTOM-RIGHT — reserved for system messages
+        if root.system-message != "": Rectangle {
+            x: 560px;
+            y: 400px;
+            width: 228px;
+            height: 64px;
+            background: transparent;
+            Text {
+                width: 100%;
+                height: 100%;
+                text: root.system-message;
+                color: SigmaTheme.dial-ink;
+                font-family: "Operation Napalm";
+                font-size: 18px;
+                font-weight: 400;
+                letter-spacing: 1px;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                wrap: word-wrap;
+            }
         }
     }
 
@@ -231,7 +245,7 @@ export component RoadDashboard inherits Rectangle {
         text: "← → switch window   ↑ back to ride";
         color: SigmaTheme.dial-whisper;
         font-size: 8px;
-        font-weight: 600;
+        font-weight: 400;
         opacity: SigmaTone.hint-opacity;
     }
 }

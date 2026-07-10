@@ -29,7 +29,7 @@ export component CameraWindow inherits Rectangle {
                 text: root.rear-view ? "REAR CAMERA" : "FRONT CAMERA";
                 color: SigmaTheme.dial-label;
                 font-size: 26px;
-                font-weight: 700;
+                font-weight: 400;
                 horizontal-alignment: center;
                 vertical-alignment: center;
             }
@@ -38,7 +38,7 @@ export component CameraWindow inherits Rectangle {
                 x: 12px; y: 12px; width: 8px; height: 8px;
                 border-radius: 4px; background: SigmaTheme.accent-red-dim;
             }
-            Text { x: 26px; y: 10px; text: "REC"; color: SigmaTheme.dial-caption; font-size: 10px; font-weight: 600; }
+            Text { x: 26px; y: 10px; text: "REC"; color: SigmaTheme.dial-caption; font-size: 10px; font-weight: 400; }
         }
 
         HorizontalLayout {
@@ -51,7 +51,7 @@ export component CameraWindow inherits Rectangle {
                 text: "SPACE snapshot · ↓ swap view";
                 color: SigmaTheme.dial-caption;
                 font-size: 10px;
-                font-weight: 600;
+                font-weight: 400;
                 vertical-alignment: center;
             }
         }

@@ -1,8 +1,8 @@
 import { SigmaTheme } from "../theme.slint";
 
 export struct Tick {
-    x: length,
-    y: length,
+    x: float,
+    y: float,
     label: string,
     redline: bool,
 }
@@ -21,6 +21,8 @@ component GaugePath inherits Path {
 export component RpmDial inherits Rectangle {
     in property <float> rpm: 0;
     in property <int> gear: 0;
+    // String form — FemtoVG leaves `\{int}` blank; "N"/digits must be real strings.
+    in property <string> gear-label: "N";
     in property <bool> at-redline: false;
 
     in property <string> track-path;
@@ -34,6 +36,14 @@ export component RpmDial inherits Rectangle {
     in property <string> needle-right;
     in property <string> needle-outline;
     in property <[Tick]> labels;
+    in property <string> rpm-scale-caption: "RPM × 1000";
+
+    // Turn / hazard — 30° outer-ring sectors at 9 o'clock / 3 o'clock
+    in property <string> signal-left-path;
+    in property <string> signal-right-path;
+    in property <bool> turn-left: false;
+    in property <bool> turn-right: false;
+    in property <bool> signal-lit: false;
 
     width: 800px;
     height: 480px;
@@ -47,6 +57,33 @@ export component RpmDial inherits Rectangle {
     Rectangle {
         x: 452px - 202px; y: 246px - 202px; width: 404px; height: 404px;
         border-radius: 202px; background: SigmaTheme.dial-face-bg;
+    }
+
+    // Turn / hazard indicators sit on the outer ring (under ticks/needle)
+    if root.turn-left && root.signal-lit: Path {
+        width: 800px; height: 480px;
+        viewbox-x: 0; viewbox-y: 0; viewbox-width: 800; viewbox-height: 480;
+        commands: root.signal-left-path;
+        fill: SigmaTheme.signal-amber;
+    }
+    if root.turn-right && root.signal-lit: Path {
+        width: 800px; height: 480px;
+        viewbox-x: 0; viewbox-y: 0; viewbox-width: 800; viewbox-height: 480;
+        commands: root.signal-right-path;
+        fill: SigmaTheme.signal-amber;
+    }
+    // Dim resting glow while signalling but in the off half of the blink
+    if root.turn-left && !root.signal-lit: Path {
+        width: 800px; height: 480px;
+        viewbox-x: 0; viewbox-y: 0; viewbox-width: 800; viewbox-height: 480;
+        commands: root.signal-left-path;
+        fill: SigmaTheme.signal-amber-dim;
+    }
+    if root.turn-right && !root.signal-lit: Path {
+        width: 800px; height: 480px;
+        viewbox-x: 0; viewbox-y: 0; viewbox-width: 800; viewbox-height: 480;
+        commands: root.signal-right-path;
+        fill: SigmaTheme.signal-amber-dim;
     }
 
     Path {
@@ -72,8 +109,8 @@ export component RpmDial inherits Rectangle {
     }
 
     for t in root.labels: Rectangle {
-        x: t.x - 18px;
-        y: t.y - 15px;
+        x: t.x * 1px - 18px;
+        y: t.y * 1px - 15px;
         width: 36px;
         height: 30px;
         background: transparent;
@@ -82,10 +119,10 @@ export component RpmDial inherits Rectangle {
             height: 100%;
             text: t.label;
             color: t.redline
-                ? (root.at-redline ? SigmaTheme.redline-bright : SigmaTheme.accent-red-dim)
-                : SigmaTheme.dial-face;
+                ? (root.at-redline ? SigmaTheme.redline-bright : #ff8a80)
+                : #e8e8ee;
             font-size: 26px;
-            font-weight: 700;
+            font-weight: 400;
             horizontal-alignment: center;
             vertical-alignment: center;
         }
@@ -116,8 +153,8 @@ export component RpmDial inherits Rectangle {
         Text {
             width: 100%;
             height: 100%;
-            text: root.gear == 0 ? "N" : "\{root.gear}";
-            color: root.gear == 0 ? SigmaTheme.dial-face : SigmaTheme.dial-gear;
+            text: root.gear-label;
+            color: root.gear == 0 ? #4ade80 : #ffffff;
             font-size: 74px;
             font-weight: 800;
             horizontal-alignment: center;
@@ -129,10 +166,11 @@ export component RpmDial inherits Rectangle {
         width: 120px;
         x: 452px - 60px;
         y: 246px + 74px;
-        text: "RPM × 1000";
+        text: root.rpm-scale-caption;
         color: SigmaTheme.dial-caption;
-        font-size: 10px;
-        font-weight: 600;
+        font-family: "Operation Napalm";
+        font-size: 16px;
+        font-weight: 400;
         horizontal-alignment: center;
     }
 }

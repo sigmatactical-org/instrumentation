@@ -28,7 +28,7 @@ export component FuelWindow inherits Rectangle {
                     text: "\{round(root.fuel-pct * 100)}%";
                     color: root.fuel-pct < 0.15 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-value;
                     font-size: 44px;
-                    font-weight: 700;
+                    font-weight: 400;
                 }
                 MeterBar {
                     ratio: root.fuel-pct;

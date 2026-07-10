@@ -4,10 +4,14 @@ use slint::SharedString;
 
 use super::constants::{CX, CY, R};
 use super::geometry::{angle_for, deg2rad};
+use super::scale::GaugeScale;
 
 /// Diamond needle → (left bevel, spine, right bevel, outline).
-pub fn needle_paths(rpm: f32) -> (SharedString, SharedString, SharedString, SharedString) {
-    let a = deg2rad(angle_for(rpm));
+pub fn needle_paths(
+    scale: &GaugeScale,
+    rpm: f32,
+) -> (SharedString, SharedString, SharedString, SharedString) {
+    let a = deg2rad(angle_for(rpm, scale));
     let (dx, dy) = (a.cos(), a.sin());
     let (px, py) = (-a.sin(), a.cos());
     let (rin, rsh, rtip, wb, ws) = (R * 0.30, R * 0.72, R * 0.99, 10.5, 3.5);

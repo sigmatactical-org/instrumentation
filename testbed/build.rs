@@ -1,3 +1,3 @@
 fn main() {
-    println!("cargo::rustc-check-cfg=cfg(feature, values(\"virt-panel\"))");
+    // No feature flags — testbed always uses the fixed panel + harness window.
 }

@@ -35,13 +35,13 @@ export component CompassWindow inherits Rectangle {
                 text: "\{round(root.heading)}°";
                 color: SigmaTheme.dial-value;
                 font-size: 30px;
-                font-weight: 700;
+                font-weight: 400;
             }
             Text {
                 text: root.heading-label;
                 color: SigmaTheme.dial-ink;
                 font-size: 22px;
-                font-weight: 700;
+                font-weight: 400;
                 vertical-alignment: center;
             }
         }
@@ -72,7 +72,7 @@ export component CompassWindow inherits Rectangle {
                     text: "\{a}";
                     color: a == 0 ? SigmaTheme.dial-value : SigmaTheme.dial-label;
                     font-size: 13px;
-                    font-weight: 700;
+                    font-weight: 400;
                     horizontal-alignment: center;
                 }
                 Rectangle {
@@ -88,7 +88,7 @@ export component CompassWindow inherits Rectangle {
                     text: root.cardinal(a);
                     color: a == 0 ? SigmaTheme.dial-value : SigmaTheme.dial-ink;
                     font-size: 16px;
-                    font-weight: 700;
+                    font-weight: 400;
                     horizontal-alignment: center;
                 }
             }

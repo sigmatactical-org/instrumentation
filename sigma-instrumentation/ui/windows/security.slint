@@ -31,7 +31,7 @@ export component SecurityWindow inherits Rectangle {
                         text: root.alarm-armed ? "ALARM ARMED" : "ALARM OFF";
                         color: root.alarm-armed ? SigmaTheme.dial-value : SigmaTheme.dial-ink;
                         font-size: 26px;
-                        font-weight: 800;
+                        font-weight: 400;
                         horizontal-alignment: center;
                         vertical-alignment: center;
                     }
@@ -44,7 +44,7 @@ export component SecurityWindow inherits Rectangle {
             VerticalLayout {
                 spacing: 8px;
                 horizontal-stretch: 1;
-                Text { text: "SUBSYSTEMS"; color: SigmaTheme.dial-whisper; font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+                Text { text: "SUBSYSTEMS"; color: SigmaTheme.dial-whisper; font-family: "Operation Napalm"; font-size: 14px; font-weight: 400; letter-spacing: 1px; }
 
                 HorizontalLayout {
                     spacing: 8px;
@@ -62,7 +62,7 @@ export component SecurityWindow inherits Rectangle {
                     text: "Geofence and motion alerts are pushed to the companion app in real time.";
                     color: SigmaTheme.dial-caption;
                     font-size: 10px;
-                    font-weight: 600;
+                    font-weight: 400;
                     wrap: word-wrap;
                 }
                 Rectangle { vertical-stretch: 1; }

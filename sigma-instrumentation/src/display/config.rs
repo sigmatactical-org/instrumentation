@@ -2,6 +2,8 @@
 
 const PANEL_WIDTH: u32 = 800;
 const PANEL_HEIGHT: u32 = 480;
+/// Cluster face (480) + harness strip (~96).
+const TESTBED_HEIGHT: u32 = 576;
 
 /// How the dashboard window should be presented on startup.
 #[derive(Clone, Copy, Debug)]
@@ -16,6 +18,22 @@ impl DisplayConfig {
     pub const fn virt_panel() -> Self {
         Self {
             fixed_size: Some((PANEL_WIDTH, PANEL_HEIGHT)),
+            default_kiosk: false,
+        }
+    }
+
+    /// Desktop / virt testbed with the config harness under the cluster face.
+    pub const fn testbed() -> Self {
+        Self {
+            fixed_size: Some((PANEL_WIDTH, TESTBED_HEIGHT)),
+            default_kiosk: false,
+        }
+    }
+
+    /// Virt panel size but tall enough for the harness strip.
+    pub const fn testbed_virt_panel() -> Self {
+        Self {
+            fixed_size: Some((PANEL_WIDTH, TESTBED_HEIGHT)),
             default_kiosk: false,
         }
     }

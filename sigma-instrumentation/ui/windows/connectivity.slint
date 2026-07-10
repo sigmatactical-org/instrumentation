@@ -24,7 +24,7 @@ export component ConnectivityWindow inherits Rectangle {
                 width: 50%;
                 HorizontalLayout {
                     spacing: 8px;
-                    Text { text: "Bluetooth"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 700; }
+                    Text { text: "Bluetooth"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 400; }
                     Rectangle { horizontal-stretch: 1; }
                     Chip { text: root.bt-connected ? "PAIRED" : "OFF"; on: root.bt-connected; }
                 }
@@ -41,7 +41,7 @@ export component ConnectivityWindow inherits Rectangle {
 
                 HorizontalLayout {
                     spacing: 8px;
-                    Text { text: "Wi-Fi"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 700; }
+                    Text { text: "Wi-Fi"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 400; }
                     Rectangle { horizontal-stretch: 1; }
                     Chip { text: root.wifi-connected ? "ON" : "OFF"; on: root.wifi-connected; }
                 }
@@ -55,7 +55,7 @@ export component ConnectivityWindow inherits Rectangle {
                 horizontal-stretch: 1;
                 HorizontalLayout {
                     spacing: 8px;
-                    Text { text: "Companion App"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 700; }
+                    Text { text: "Companion App"; color: SigmaTheme.dial-ink; font-size: 26px; font-weight: 400; }
                     Rectangle { horizontal-stretch: 1; }
                     Chip { text: root.companion-connected ? "LINKED" : "—"; on: root.companion-connected; }
                 }
@@ -65,7 +65,7 @@ export component ConnectivityWindow inherits Rectangle {
                         : "Open the Sigma app on your phone to link.";
                     color: SigmaTheme.dial-caption;
                     font-size: 10px;
-                    font-weight: 600;
+                    font-weight: 400;
                     wrap: word-wrap;
                 }
                 StatRow { label: "MEDIA"; value: "Now Playing ▸"; value-size: 22px; }

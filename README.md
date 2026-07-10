@@ -1,50 +1,54 @@
 # Sigma Racer Instrumentation
 
 Rust workspace for the **Sigma Racer** motorcycle instrument cluster — reusable UI
-library, desktop testbed, and vehicle service.
+library and desktop testbed.
 
 | Crate | Binary | Role |
 |-------|--------|------|
-| [`sigma-instrumentation/`](sigma-instrumentation/) | *(library)* | Slint dashboard, gauge geometry, themes, display helpers |
-| [`testbed/`](testbed/) | `testbed` | Interactive demo — ride simulation, window nav, component testing |
+| [`sigma-instrumentation/`](sigma-instrumentation/) | *(library)* | Slint dashboard, gauge geometry, themes, `ClusterTelemetry` binding |
+| [`testbed/`](testbed/) | `testbed` | Cluster UI + harness — candump replay, rate, day/dusk/night |
 
 Production cluster binary **`sigma-racer-cluster`** lives in the sibling [`sigma-racer-cluster`](../sigma-racer-cluster/) repo.
+
+## Architecture
+
+```
+CAN / IPC / candump  →  decode (sigma-racer-telemetry)  →  ClusterTelemetry  →  apply_telemetry()  →  Slint
+```
+
+The UI crate never sees raw CAN. Producers map into [`ClusterTelemetry`](sigma-instrumentation/src/telemetry/message.rs) and call [`apply_telemetry`](sigma-instrumentation/src/telemetry/apply.rs) (or the [`TelemetryPresenter`](sigma-instrumentation/src/telemetry/presenter.rs) trait).
 
 ## Quick start
 
 ```bash
-# Interactive ride simulation (desktop window)
 cargo run -p testbed
-
-# 800×480 panel — matches sigma-racer-wingman-imx8mp / sigma-racer-wingman-qemu
-cargo virt
-
-# Production binary (idle telemetry — same as embedded target)
-cd ../sigma-racer-cluster && cargo run --bin sigma-racer-cluster
 ```
 
-### Testbed controls
+(`cargo virt` is the same alias.)
 
-| Key | Action |
-|-----|--------|
+### Testbed harness
+
+| Control | Action |
+|---------|--------|
+| **Browse…** | Pick a `candump -L` log |
+| **rate** slider | Replay speed 0.25×–4× |
+| **display mode** | Cycle day → dusk → night |
 | `←` / `→` | Cycle windows |
 | `1`–`9` | Jump to window |
-| `↑` / `Esc` | Return to ride screen |
-| `+` | Restart acceleration run |
-| `-` | Force deceleration |
+| `+` | Restart current log |
+| `-` | Halve replay rate |
 
-## Workspace layout
-
-```
-sigma-instrumentation/   # lib — ui/, gauge, theme, display helpers
-testbed/                      # dev — XSR900 ride simulation
-../sigma-racer-cluster/                 # product — sigma-racer-cluster binary, vehicle profile
-```
+Default feed is the baked sample from `sigma-racer-cluster/testdata/sample-ride.log`.
 
 ## Display modes
 
-Set `SIGMA_DISPLAY_MODE` to `night` (default), `dusk`, or `day`. See
-`sigma-instrumentation/src/theme.rs`.
+Set `SIGMA_DISPLAY_MODE` to `day` (default), `dusk`, or `night`. The testbed button cycles day → dusk → night.
+
+## Typography
+
+Cluster UI embeds **Operation Napalm** (army stencil) from the Sigma theme
+(`it/theme/assets/static/fonts/operation-napalm-regular.woff2`, converted to TTF for Slint).
+Window `default-font-family` is `"Operation Napalm"` (Regular only).
 
 ## Embedded build (Wingman)
 
@@ -53,12 +57,6 @@ The Yocto recipe builds **`sigma-racer-cluster`** from the [`sigma-racer-cluster
 ```bash
 bitbake sigma-racer-cluster
 ```
-
-| Item | Value |
-|------|-------|
-| Binary | `/usr/bin/sigma-racer-cluster` |
-| systemd | `cluster-ui.service` |
-| Environment | `/etc/sigma-racer-wingman/ui.env` |
 
 Full distribution docs: [`sigma-racer-wingman`](../sigma-racer-wingman/README.md).
 

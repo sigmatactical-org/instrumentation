@@ -200,7 +200,7 @@ impl ThemePreset {
             bar_fill_opacity: 0.40,
             chip_off_opacity: 0.38,
             chip_on_opacity: 0.68,
-            speed_opacity: 0.76,
+            speed_opacity: 1.0,
             hint_opacity: 0.58,
             compass_opacity: 0.48,
             side_stand_opacity: 0.62,

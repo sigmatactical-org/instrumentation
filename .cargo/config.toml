@@ -1,6 +1,6 @@
 [alias]
-# 800×480 borderless panel — matches sigma-racer-wingman-imx8mp and sigma-racer-wingman-qemu display
-virt = "run -p testbed --features virt-panel"
+# Same as `cargo run -p testbed` — kept for muscle memory.
+virt = "run -p testbed"
 
 [env]
-SIGMA_DISPLAY_MODE = "night"
+SIGMA_DISPLAY_MODE = "day"
