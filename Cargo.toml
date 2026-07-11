@@ -10,6 +10,7 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["Sigma Tactical Group contributors <https://github.com/sigmatactical-org>"]
+homepage = "https://sigmatactical.org"
 publish = false
 
 [workspace.dependencies]
