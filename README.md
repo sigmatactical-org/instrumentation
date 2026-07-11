@@ -1,5 +1,7 @@
 # Sigma Racer Instrumentation
 
+[![CI](https://github.com/sigmatactical-org/sigma-instrumentation/actions/workflows/ci.yml/badge.svg)](https://github.com/sigmatactical-org/sigma-instrumentation/actions/workflows/ci.yml)
+
 Rust workspace for the **Sigma Racer** motorcycle instrument cluster — reusable UI
 library and desktop testbed.
 
