@@ -1,7 +1,7 @@
 //! RPM-driven dial dynamics — the swept sector and needle paths.
 
 use crate::gauge::GaugeScale;
-use crate::{gauge, SigmaDashboard};
+use crate::{SigmaDashboard, gauge};
 
 /// Update the swept sector and the four needle-path properties for `rpm`.
 pub fn set_needle_paths(ui: &SigmaDashboard, scale: &GaugeScale, rpm: f32) {

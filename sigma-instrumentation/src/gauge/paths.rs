@@ -44,7 +44,11 @@ fn annular_sector(a0_deg: f32, a1_deg: f32, rin: f32, rout: f32) -> String {
     let (oex, oey) = point(a1_deg, rout);
     let (iex, iey) = point(a1_deg, rin);
     let (isx, isy) = point(a0_deg, rin);
-    let large = if (a1_deg - a0_deg).abs() > 180.0 { 1 } else { 0 };
+    let large = if (a1_deg - a0_deg).abs() > 180.0 {
+        1
+    } else {
+        0
+    };
     format!(
         "M {osx:.2} {osy:.2} A {rout:.2} {rout:.2} 0 {large} 1 {oex:.2} {oey:.2} \
          L {iex:.2} {iey:.2} A {rin:.2} {rin:.2} 0 {large} 0 {isx:.2} {isy:.2} Z"

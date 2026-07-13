@@ -11,14 +11,12 @@ mod paths;
 mod scale;
 mod ticks;
 
-pub use scale::{
-    GaugeScale, DEFAULT_MAX_RPM, DEFAULT_REDLINE_RPM,
-};
 pub use needle::needle_paths;
-pub use numeral::{numerals, Numeral};
+pub use numeral::{Numeral, numerals};
 pub use paths::{
     redline_path, swept_path, track_path, turn_signal_left_path, turn_signal_right_path,
 };
+pub use scale::{DEFAULT_MAX_RPM, DEFAULT_REDLINE_RPM, GaugeScale};
 pub use ticks::{ticks_major, ticks_minor, ticks_redline};
 
 /// Default full-scale RPM (XSR900 GP dial).

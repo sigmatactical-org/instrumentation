@@ -6,10 +6,10 @@ mod replay;
 mod snapshot;
 
 use connectivity_sim::NavState;
-use replay::{pick_candump_file, CandumpReplay};
+use replay::{CandumpReplay, pick_candump_file};
 use sigma_instrumentation::{
-    configure_window, init_gauge_art, set_speed_readout, start_signal_blink, start_updates_client,
-    theme, windows, DisplayConfig, GaugeScale, SigmaDashboard, UpdatesConfig,
+    DisplayConfig, GaugeScale, SigmaDashboard, UpdatesConfig, configure_window, init_gauge_art,
+    set_speed_readout, start_signal_blink, start_updates_client, theme, windows,
 };
 use slint::{ComponentHandle, Model, SharedString};
 use std::cell::Cell;

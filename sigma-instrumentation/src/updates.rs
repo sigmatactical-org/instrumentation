@@ -44,8 +44,7 @@ impl UpdatesConfig {
                 .unwrap_or_else(|_| "http://updates.sigma.localtest.me:30080".into())
                 .trim_end_matches('/')
                 .to_owned(),
-            channel: std::env::var("SIGMA_UPDATES_CHANNEL")
-                .unwrap_or_else(|_| "dev".into()),
+            channel: std::env::var("SIGMA_UPDATES_CHANNEL").unwrap_or_else(|_| "dev".into()),
             current_version: std::env::var("SIGMA_IMAGE_VERSION")
                 .unwrap_or_else(|_| "0.0.0".into()),
         }
@@ -82,10 +81,13 @@ pub fn apply_release(ui: &SigmaDashboard, cfg: &UpdatesConfig, rel: &ChannelRele
 pub fn fetch_latest(cfg: &UpdatesConfig) -> Result<ChannelRelease, String> {
     let url = cfg.latest_url();
     let body = ureq::get(&url)
-        .timeout(Duration::from_secs(5))
+        .config()
+        .timeout_global(Some(Duration::from_secs(5)))
+        .build()
         .call()
         .map_err(|e| format!("updates fetch: {e}"))?
-        .into_string()
+        .body_mut()
+        .read_to_string()
         .map_err(|e| format!("updates body: {e}"))?;
     serde_json::from_str(&body).map_err(|e| format!("updates json: {e}"))
 }

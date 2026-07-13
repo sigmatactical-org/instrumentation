@@ -2,10 +2,10 @@
 
 use chrono::{Local, Timelike};
 use sigma_instrumentation::{
-    apply_telemetry, ClusterTelemetry, GaugeScale, SigmaDashboard, TelemetryPresenter,
+    ClusterTelemetry, GaugeScale, SigmaDashboard, TelemetryPresenter, apply_telemetry,
 };
-use sigma_racer_telemetry::can::{decode_frame, parse_candump, CandumpFrame};
 use sigma_racer_telemetry::VehicleState;
+use sigma_racer_telemetry::can::{CandumpFrame, decode_frame, parse_candump};
 use slint::SharedString;
 use std::cell::{Cell, RefCell};
 use std::path::{Path, PathBuf};
@@ -14,8 +14,7 @@ use std::time::Instant;
 use crate::map::to_cluster;
 
 const GAUGE: GaugeScale = GaugeScale::DEFAULT;
-const SAMPLE_LOG: &str =
-    include_str!("../../../sigma-racer-cluster/testdata/sample-ride.log");
+const SAMPLE_LOG: &str = include_str!("../../../sigma-racer-cluster/testdata/sample-ride.log");
 
 pub struct CandumpReplay {
     frames: RefCell<Vec<CandumpFrame>>,

@@ -33,7 +33,7 @@ jobs:
           repository: sigmatactical-org/sigma-racer-cluster
           path: embedded/sigma-racer-cluster
 
-      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: dtolnay/rust-toolchain@1.92.0
         with:
           components: clippy
 

@@ -2,10 +2,10 @@
 
 use slint::SharedString;
 
+use crate::SigmaDashboard;
 use crate::dashboard::{set_needle_paths, set_speed_readout};
 use crate::gauge::GaugeScale;
 use crate::heading;
-use crate::SigmaDashboard;
 
 use super::message::ClusterTelemetry;
 use super::presenter::TelemetryPresenter;

@@ -38,8 +38,7 @@ pub fn force_panel_scale_factor() {
 pub fn ensure_panel_geometry(ui: &SigmaDashboard, kiosk: bool) {
     if kiosk {
         ui.window().set_fullscreen(true);
-        ui.window()
-            .set_position(slint::PhysicalPosition::new(0, 0));
+        ui.window().set_position(slint::PhysicalPosition::new(0, 0));
     }
 
     let phys = ui.window().size();
@@ -50,8 +49,9 @@ pub fn ensure_panel_geometry(ui: &SigmaDashboard, kiosk: bool) {
         .min(ph / PANEL_HEIGHT as f32)
         .clamp(0.25, 8.0);
 
-    ui.window()
-        .dispatch_event(WindowEvent::ScaleFactorChanged { scale_factor: scale });
+    ui.window().dispatch_event(WindowEvent::ScaleFactorChanged {
+        scale_factor: scale,
+    });
 
     if !kiosk {
         // Windowed: exact design × scale.

@@ -2,7 +2,7 @@
 
 use crate::SigmaDashboard;
 
-use super::mode::{parse_mode_from_env, DisplayMode};
+use super::mode::{DisplayMode, parse_mode_from_env};
 use super::preset::ThemePreset;
 
 /// Load display mode from the environment and apply. Returns the preset used.

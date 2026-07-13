@@ -18,12 +18,14 @@ pub mod theme;
 pub mod updates;
 pub mod windows;
 
-pub use dashboard::{init_gauge_art, set_needle_paths, set_speed_readout, speed_digits, start_signal_blink};
+pub use dashboard::{
+    init_gauge_art, set_needle_paths, set_speed_readout, speed_digits, start_signal_blink,
+};
 pub use display::{
-    configure_window, ensure_panel_geometry, force_panel_scale_factor, DisplayConfig,
+    DisplayConfig, configure_window, ensure_panel_geometry, force_panel_scale_factor,
 };
 pub use gauge::GaugeScale;
 pub use heading::heading_label;
-pub use telemetry::{apply_telemetry, ClusterTelemetry, TelemetryPresenter};
+pub use telemetry::{ClusterTelemetry, TelemetryPresenter, apply_telemetry};
 pub use theme::DisplayMode;
-pub use updates::{start as start_updates_client, UpdatesConfig};
+pub use updates::{UpdatesConfig, start as start_updates_client};

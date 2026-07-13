@@ -6,7 +6,8 @@ use super::constants::R;
 use super::geometry::{angle_for, point};
 use super::scale::GaugeScale;
 
-fn ticks(scale: &GaugeScale, major_wanted: bool, redline_wanted: bool) -> SharedString {    let _major = scale.major_step();
+fn ticks(scale: &GaugeScale, major_wanted: bool, redline_wanted: bool) -> SharedString {
+    let _major = scale.major_step();
     let minor = scale.minor_step();
     let count = (scale.max_rpm / minor).round() as i32;
     let zone = scale.redline_zone();

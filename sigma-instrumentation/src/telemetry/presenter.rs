@@ -1,7 +1,7 @@
 //! Presenter trait — anything that can drive the dashboard from formatted data.
 
-use crate::gauge::GaugeScale;
 use crate::SigmaDashboard;
+use crate::gauge::GaugeScale;
 
 /// Push formatted telemetry onto the Slint dashboard.
 ///

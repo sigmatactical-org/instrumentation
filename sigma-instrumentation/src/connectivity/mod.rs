@@ -238,14 +238,7 @@ pub fn build_items(menu: &Menu, snap: &Snapshot) -> Vec<ConnItem> {
                 .devices
                 .iter()
                 .enumerate()
-                .map(|(i, d)| {
-                    item(
-                        &d.title,
-                        &d.detail,
-                        &d.badge,
-                        menu.focus == i,
-                    )
-                })
+                .map(|(i, d)| item(&d.title, &d.detail, &d.badge, menu.focus == i))
                 .collect();
             let scan_i = rows.len();
             rows.push(item(
@@ -261,14 +254,7 @@ pub fn build_items(menu: &Menu, snap: &Snapshot) -> Vec<ConnItem> {
                 .networks
                 .iter()
                 .enumerate()
-                .map(|(i, n)| {
-                    item(
-                        &n.title,
-                        &n.detail,
-                        &n.badge,
-                        menu.focus == i,
-                    )
-                })
+                .map(|(i, n)| item(&n.title, &n.detail, &n.badge, menu.focus == i))
                 .collect();
             let scan_i = rows.len();
             rows.push(item(
