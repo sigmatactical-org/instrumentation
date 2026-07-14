@@ -32,14 +32,17 @@ fn ticks(scale: &GaugeScale, major_wanted: bool, redline_wanted: bool) -> Shared
     s.into()
 }
 
+/// SVG path drawing every major tick.
 pub fn ticks_major(scale: &GaugeScale) -> SharedString {
     ticks(scale, true, false)
 }
 
+/// SVG path drawing every minor tick.
 pub fn ticks_minor(scale: &GaugeScale) -> SharedString {
     ticks(scale, false, false)
 }
 
+/// SVG path drawing ticks inside the redline band.
 pub fn ticks_redline(scale: &GaugeScale) -> SharedString {
     ticks(scale, true, true)
 }

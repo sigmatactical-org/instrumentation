@@ -4,6 +4,7 @@ use slint::SharedString;
 
 use crate::SigmaDashboard;
 
+/// Format and push the km/h readout digits.
 pub fn set_speed_readout(ui: &SigmaDashboard, speed: i32) {
     let (h, t, o) = speed_digits(speed);
     ui.set_speed(speed);

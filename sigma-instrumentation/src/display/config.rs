@@ -1,6 +1,8 @@
 //! Display sizing presets.
 
+/// Native cluster panel width in pixels.
 pub const PANEL_WIDTH: u32 = 800;
+/// Native cluster panel height in pixels.
 pub const PANEL_HEIGHT: u32 = 480;
 /// Cluster face (480) + harness strip (~96).
 const TESTBED_HEIGHT: u32 = 576;
@@ -15,6 +17,7 @@ pub struct DisplayConfig {
 }
 
 impl DisplayConfig {
+    /// QEMU/virt panel: native size, windowed.
     pub const fn virt_panel() -> Self {
         Self {
             fixed_size: Some((PANEL_WIDTH, PANEL_HEIGHT)),
@@ -38,6 +41,7 @@ impl DisplayConfig {
         }
     }
 
+    /// Development desktop: native size, windowed.
     pub const fn desktop() -> Self {
         Self {
             fixed_size: None,
@@ -45,6 +49,7 @@ impl DisplayConfig {
         }
     }
 
+    /// Device panel: fullscreen kiosk unless overridden.
     pub const fn embedded(default_kiosk: bool) -> Self {
         Self {
             // Always the cluster panel size — paired with physical pin in kiosk.

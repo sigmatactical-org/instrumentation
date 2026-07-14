@@ -3,58 +3,29 @@
 //! Face buttons on the Updates window (index 9): Previous/Next move focus between
 //! Check and Install; Select runs the focused action; Back returns home.
 
-use serde::Deserialize;
+mod channel_release;
+mod config;
+
+pub use channel_release::ChannelRelease;
+pub use config::UpdatesConfig;
+
+use crate::SigmaDashboard;
 use slint::{ComponentHandle, SharedString};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Duration;
 
-use crate::SigmaDashboard;
-
 /// Window index for Updates (keep in sync with [`crate::windows`]).
 pub const WINDOW: i32 = 9;
 
+/// Focus index of the Check row.
 pub const FOCUS_CHECK: i32 = 0;
+/// Focus index of the Install row.
 pub const FOCUS_INSTALL: i32 = 1;
+/// Number of focusable rows.
 pub const FOCUS_COUNT: i32 = 2;
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct ChannelRelease {
-    pub channel: String,
-    pub version: String,
-    #[serde(default)]
-    pub notes: String,
-    #[serde(default)]
-    pub install: String,
-    #[serde(default)]
-    pub bundle_url: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct UpdatesConfig {
-    pub base_url: String,
-    pub channel: String,
-    pub current_version: String,
-}
-
-impl UpdatesConfig {
-    pub fn from_env() -> Self {
-        Self {
-            base_url: std::env::var("SIGMA_UPDATES_URL")
-                .unwrap_or_else(|_| "http://updates.sigma.localtest.me:30080".into())
-                .trim_end_matches('/')
-                .to_owned(),
-            channel: std::env::var("SIGMA_UPDATES_CHANNEL").unwrap_or_else(|_| "dev".into()),
-            current_version: std::env::var("SIGMA_IMAGE_VERSION")
-                .unwrap_or_else(|_| "0.0.0".into()),
-        }
-    }
-
-    pub fn latest_url(&self) -> String {
-        format!("{}/v1/channel/{}/latest", self.base_url, self.channel)
-    }
-}
-
+/// Paint the idle (pre-poll) state.
 pub fn apply_idle(ui: &SigmaDashboard, cfg: &UpdatesConfig) {
     ui.set_update_channel(SharedString::from(cfg.channel.as_str()));
     ui.set_update_current_version(SharedString::from(cfg.current_version.as_str()));
@@ -66,6 +37,7 @@ pub fn apply_idle(ui: &SigmaDashboard, cfg: &UpdatesConfig) {
     ui.set_update_focus(FOCUS_CHECK);
 }
 
+/// Paint a fetched release (availability, notes, status line).
 pub fn apply_release(ui: &SigmaDashboard, cfg: &UpdatesConfig, rel: &ChannelRelease) {
     let newer = rel.version != cfg.current_version;
     ui.set_update_available(newer);
@@ -78,6 +50,7 @@ pub fn apply_release(ui: &SigmaDashboard, cfg: &UpdatesConfig, rel: &ChannelRele
     }));
 }
 
+/// Fetch the channel's latest release from the catalog (5 s timeout).
 pub fn fetch_latest(cfg: &UpdatesConfig) -> Result<ChannelRelease, String> {
     let url = cfg.latest_url();
     let body = ureq::get(&url)
@@ -105,6 +78,7 @@ pub fn move_focus(ui: &SigmaDashboard, delta: i32) -> Option<i32> {
     None
 }
 
+/// Return focus to the Check row.
 pub fn reset_focus(ui: &SigmaDashboard) {
     ui.set_update_focus(FOCUS_CHECK);
 }

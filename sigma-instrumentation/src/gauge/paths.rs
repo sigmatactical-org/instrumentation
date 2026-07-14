@@ -11,10 +11,12 @@ const SIGNAL_R_IN: f32 = 200.0;
 const SIGNAL_R_OUT: f32 = 216.0;
 const SIGNAL_SPAN_DEG: f32 = 30.0;
 
+/// SVG path of the full gauge track arc.
 pub fn track_path(scale: &GaugeScale) -> SharedString {
     arc(0.0, scale.max_rpm, R * 0.97, scale).into()
 }
 
+/// SVG path of the redline arc segment.
 pub fn redline_path(scale: &GaugeScale) -> SharedString {
     arc(scale.redline_zone(), scale.max_rpm, R * 0.90, scale).into()
 }

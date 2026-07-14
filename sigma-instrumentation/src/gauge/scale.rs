@@ -13,11 +13,13 @@ pub struct GaugeScale {
 }
 
 impl GaugeScale {
+    /// XSR900 GP scale (11.5k max, 11.25k redline).
     pub const DEFAULT: Self = Self {
         max_rpm: DEFAULT_MAX_RPM,
         redline_rpm: DEFAULT_REDLINE_RPM,
     };
 
+    /// Scale from a max + redline rpm.
     pub fn new(max_rpm: f32, redline_rpm: f32) -> Self {
         Self {
             max_rpm: max_rpm.max(1.0),
@@ -43,6 +45,7 @@ impl GaugeScale {
         }
     }
 
+    /// Rpm distance between minor ticks.
     pub fn minor_step(&self) -> f32 {
         self.major_step() / 2.0
     }

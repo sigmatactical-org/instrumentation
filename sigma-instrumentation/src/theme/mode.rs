@@ -8,6 +8,7 @@ pub enum DisplayMode {
 }
 
 impl DisplayMode {
+    /// Parse `day`/`dusk`/`night` (case-insensitive), defaulting to day.
     pub fn parse(s: &str) -> Self {
         match s.trim().to_ascii_lowercase().as_str() {
             "dusk" | "twilight" => Self::Dusk,
@@ -17,6 +18,7 @@ impl DisplayMode {
         }
     }
 
+    /// Canonical lowercase name.
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Day => "day",
@@ -35,6 +37,7 @@ impl DisplayMode {
     }
 }
 
+/// Mode from `SIGMA_DISPLAY_MODE`, defaulting to day.
 pub fn parse_mode_from_env() -> DisplayMode {
     if let Ok(v) = std::env::var("SIGMA_DISPLAY_MODE") {
         return DisplayMode::parse(&v);

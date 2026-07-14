@@ -55,10 +55,12 @@ pub struct ThemePreset {
 }
 
 impl ThemePreset {
+    /// The mode this preset renders.
     pub fn display_mode(self) -> DisplayMode {
         self.mode
     }
 
+    /// Preset for a display mode.
     pub fn by_mode(mode: DisplayMode) -> Self {
         match mode {
             DisplayMode::Day => Self::day(),
@@ -67,6 +69,7 @@ impl ThemePreset {
         }
     }
 
+    /// Daylight palette (high contrast, bright track).
     pub fn day() -> Self {
         Self {
             mode: DisplayMode::Day,
@@ -114,6 +117,7 @@ impl ThemePreset {
         }
     }
 
+    /// Dusk palette (dimmed, warm accents).
     pub fn dusk() -> Self {
         Self {
             mode: DisplayMode::Dusk,
@@ -161,6 +165,7 @@ impl ThemePreset {
         }
     }
 
+    /// Night palette (minimal glare, red-shifted).
     pub fn night() -> Self {
         Self {
             mode: DisplayMode::Night,
@@ -208,6 +213,7 @@ impl ThemePreset {
         }
     }
 
+    /// Push every palette color onto the dashboard.
     pub fn apply(self, ui: &SigmaDashboard) {
         let t = SigmaTheme::get(ui);
 

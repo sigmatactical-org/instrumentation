@@ -4,6 +4,7 @@ use super::constants::R;
 use super::geometry::{angle_for, point};
 use super::scale::GaugeScale;
 
+/// One major-tick label with its placed position.
 pub struct Numeral {
     pub x: f32,
     pub y: f32,
@@ -11,6 +12,7 @@ pub struct Numeral {
     pub redline: bool,
 }
 
+/// Labels for every major tick (thousands of rpm).
 pub fn numerals(scale: &GaugeScale) -> Vec<Numeral> {
     let step = scale.major_step();
     let count = (scale.max_rpm / step).round() as i32;
