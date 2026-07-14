@@ -4,6 +4,8 @@
 //! dashboard surface and helpers. Vehicle producers push [`ClusterTelemetry`]; this crate
 //! never decodes CAN.
 
+#![deny(unsafe_code)]
+
 slint::include_modules!();
 
 pub mod buttons;

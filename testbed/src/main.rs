@@ -1,5 +1,7 @@
 //! Interactive testbed — candump replay into the real cluster UI + harness.
 
+#![forbid(unsafe_code)]
+
 mod connectivity_sim;
 mod map;
 mod replay;

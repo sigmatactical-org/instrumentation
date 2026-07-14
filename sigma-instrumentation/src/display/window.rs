@@ -24,6 +24,9 @@ fn kiosk_enabled(config: &DisplayConfig) -> bool {
 
 /// Call **before** [`SigmaDashboard::new`]. Starts at 1:1; [`ensure_panel_geometry`]
 /// then letterboxes the 800×480 design into whatever surface we actually get.
+// The one allowed unsafe in this crate: Rust 2024 makes process-global
+// env mutation unsafe; callers invoke this first thing in `main`.
+#[allow(unsafe_code)]
 pub fn force_panel_scale_factor() {
     // SAFETY: single-threaded `main` before other threads / the winit loop.
     unsafe {
