@@ -28,6 +28,7 @@ export component DiagnosticsWindow inherits Rectangle {
 
         VerticalLayout {
             spacing: 3px;
+            vertical-stretch: 0;
             StatRow { label: "CAN-FD BUS"; value: "\{root.can-load}%"; value-size: 22px; }
             MeterBar {
                 ratio: root.can-load / 100.0;

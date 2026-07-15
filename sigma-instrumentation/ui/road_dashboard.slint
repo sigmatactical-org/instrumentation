@@ -18,6 +18,7 @@ import { UpdatesWindow } from "windows/updates.slint";
 
 component FullScreenHost inherits Rectangle {
     in property <int> active-window: 0;
+    in property <bool> show-nav-hints: false;
     in property <float> fuel-pct: 0.62;
     in property <string> update-channel: "dev";
     in property <string> update-current-version: "0.0.0";
@@ -48,6 +49,7 @@ component FullScreenHost inherits Rectangle {
 
     if root.active-window == 5: ConnectivityWindow {
         width: 100%; height: 100%;
+        show-nav-hints: root.show-nav-hints;
         conn-screen: root.conn-screen;
         conn-items: root.conn-items;
         conn-status: root.conn-status;
@@ -72,6 +74,7 @@ component FullScreenHost inherits Rectangle {
     }
     if root.active-window == 9: UpdatesWindow {
         width: 100%; height: 100%;
+        show-nav-hints: root.show-nav-hints;
         channel: root.update-channel;
         current-version: root.update-current-version;
         available-version: root.update-available-version;
@@ -118,6 +121,9 @@ export component RoadDashboard inherits Rectangle {
 
     in property <int> current-window: 0;
     in property <bool> nav-blocked-hint: false;
+    // Desktop/testbed keyboard hints — hidden on the product cluster,
+    // whose physical face buttons are labelled.
+    in property <bool> show-nav-hints: false;
 
     in property <string> clock: "14:32";
     in property <float> fuel-pct: 0.62;
@@ -252,7 +258,7 @@ export component RoadDashboard inherits Rectangle {
             }
         }
 
-        Text {
+        if root.show-nav-hints: Text {
             x: 12px; y: parent.height - 2px - self.preferred-height;
             text: root.stopped ? "← → window   ↑ home   +/- demo" : "← → window   +/- demo";
             color: SigmaTheme.dial-whisper;
@@ -285,14 +291,17 @@ export component RoadDashboard inherits Rectangle {
             font-weight: 400;
         }
 
-        // SIDE STAND — bold, drawn over the gear hub
+        // SIDE STAND — bold, drawn over the gear hub. Near-solid backdrop:
+        // the gear numeral must not ghost through between the words.
         if root.side-stand: Rectangle {
             x: 452px - 150px;
-            y: 246px - 28px;
+            y: 246px - 40px;
             width: 300px;
-            height: 56px;
-            background: #000000cc;
+            height: 80px;
+            background: #000000f2;
             border-radius: 4px;
+            border-width: 1px;
+            border-color: SigmaTheme.signal-amber-dim;
             Text {
                 width: 100%;
                 height: 100%;
@@ -337,6 +346,7 @@ export component RoadDashboard inherits Rectangle {
         FullScreenHost {
             width: 100%; height: 100%;
             active-window: root.current-window;
+            show-nav-hints: root.show-nav-hints;
             fuel-pct: root.fuel-pct;
             update-channel: root.update-channel;
             update-current-version: root.update-current-version;
@@ -362,7 +372,7 @@ export component RoadDashboard inherits Rectangle {
         }
     }
 
-    if root.show-fullscreen: Text {
+    if root.show-fullscreen && root.show-nav-hints: Text {
         x: 16px; y: parent.height - 4px - self.preferred-height;
         text: "← → prev/next   ↑ back   ↓ select";
         color: SigmaTheme.dial-whisper;

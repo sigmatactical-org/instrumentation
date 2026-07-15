@@ -197,8 +197,20 @@ fn main() -> Result<(), slint::PlatformError> {
     let _signal_blink = start_signal_blink(&ui);
     start_updates_client(&ui, UpdatesConfig::from_env());
 
-    // Dump a real painted frame, then exit.
+    // Dump a real painted frame, then exit. SIGMA_SNAPSHOT_WINDOW=<0-9>
+    // selects the window (full-screen windows imply Park so they render).
     if let Ok(path) = std::env::var("SIGMA_SNAPSHOT") {
+        if let Some(w) = std::env::var("SIGMA_SNAPSHOT_WINDOW")
+            .ok()
+            .and_then(|s| s.parse::<i32>().ok())
+        {
+            let w = w.clamp(0, windows::COUNT - 1);
+            nav.window.set(w);
+            if w > windows::PANEL_MAX && !replay.parked() {
+                replay.toggle_park();
+                ui.set_parked(true);
+            }
+        }
         let snap_ui = ui.as_weak();
         let snap_replay = replay.clone();
         let snap_nav = nav.clone();

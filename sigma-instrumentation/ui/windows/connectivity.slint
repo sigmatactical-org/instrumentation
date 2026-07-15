@@ -64,6 +64,8 @@ component FocusRow inherits Rectangle {
 export component ConnectivityWindow inherits Rectangle {
     // 0 = main menu, 1 = Bluetooth devices, 2 = Wi-Fi networks
     in property <int> conn-screen: 0;
+    // Desktop/testbed keyboard hints — hidden on the product cluster.
+    in property <bool> show-nav-hints: false;
     in property <[ConnItem]> conn-items;
     in property <string> conn-status: "";
     in property <bool> conn-busy: false;
@@ -94,6 +96,7 @@ export component ConnectivityWindow inherits Rectangle {
 
             if root.conn-screen == 0: VerticalLayout {
                 spacing: 6px;
+                vertical-stretch: 0;
 
                 HorizontalLayout {
                     spacing: 8px;
@@ -134,7 +137,7 @@ export component ConnectivityWindow inherits Rectangle {
 
                 Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
 
-                Text {
+                if root.show-nav-hints: Text {
                     text: "← → move focus · ↓ select · ↑ back";
                     color: SigmaTheme.dial-whisper;
                     font-size: 10px;
@@ -142,10 +145,10 @@ export component ConnectivityWindow inherits Rectangle {
                 }
             }
 
-            if root.conn-screen != 0: Text {
+            if root.conn-screen != 0 && root.show-nav-hints: Text {
                 text: root.conn-screen == 1
-                    ? "Select a headset · Esc returns to menu"
-                    : "Select a network · Esc returns to menu";
+                    ? "Select a headset · ↑ returns to menu"
+                    : "Select a network · ↑ returns to menu";
                 color: SigmaTheme.dial-whisper;
                 font-size: 10px;
                 opacity: SigmaTone.hint-opacity;

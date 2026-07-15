@@ -61,6 +61,8 @@ export component UpdatesWindow inherits Rectangle {
     in property <string> update-status: "";
     // Face-button focus: 0 = Check, 1 = Install
     in property <int> update-focus: 0;
+    // Desktop/testbed keyboard hints — hidden on the product cluster.
+    in property <bool> show-nav-hints: false;
 
     callback check-updates();
     callback install-updates();
@@ -109,16 +111,21 @@ export component UpdatesWindow inherits Rectangle {
 
                 HorizontalLayout {
                     spacing: 8px;
+                    vertical-stretch: 0;
                     Text {
-                        text: "Channel";
-                        color: SigmaTheme.dial-ink;
-                        font-size: 26px;
+                        text: "CHANNEL";
+                        color: SigmaTheme.dial-label;
+                        font-family: "Operation Napalm";
+                        font-size: 13px;
                         font-weight: 400;
+                        letter-spacing: 0.5px;
                         vertical-alignment: center;
                     }
                     Rectangle { horizontal-stretch: 1; }
                     Chip { text: root.channel; on: true; }
                 }
+
+                Rectangle { vertical-stretch: 1; }
             }
 
             Rectangle { width: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
@@ -138,7 +145,7 @@ export component UpdatesWindow inherits Rectangle {
 
                 Text {
                     text: root.update-notes == ""
-                        ? "↓ Check searches the catalog. ↓ Install applies when an update is available."
+                        ? "Check searches the catalog; Install applies when an update is available."
                         : root.update-notes;
                     color: SigmaTheme.dial-caption;
                     font-size: 10px;
@@ -156,7 +163,7 @@ export component UpdatesWindow inherits Rectangle {
 
                 Rectangle { height: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }
 
-                Text {
+                if root.show-nav-hints: Text {
                     text: "← → focus · ↓ select · ↑ back";
                     color: SigmaTheme.dial-whisper;
                     font-size: 10px;

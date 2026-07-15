@@ -1,4 +1,7 @@
 import "./fonts/dejavu-sans.ttf";
+// Bold cut must be embedded too — with only the Book face available,
+// FemtoVG renders every font-weight ≥ 700 as regular.
+import "./fonts/dejavu-sans-bold.ttf";
 import "./fonts/operation-napalm-regular.ttf";
 import { RoadDashboard } from "road_dashboard.slint";
 import { Tick } from "widgets/rpm_dial.slint";
@@ -133,8 +136,10 @@ export component SigmaDashboard inherits Window {
         background: SigmaTheme.bg;
 
         fs := FocusScope {
+            // Centre in the area above the harness strip (when visible) so
+            // the cluster face and the harness never overlap.
             x: max(0px, (parent.width - 800px) / 2);
-            y: max(0px, (parent.height - 480px) / 2);
+            y: max(0px, (parent.height - (root.harness-visible ? 96px : 0px) - 480px) / 2);
             width: 800px;
             height: 480px;
 
@@ -152,6 +157,7 @@ export component SigmaDashboard inherits Window {
 
             RoadDashboard {
                 width: 800px; height: 480px;
+                show-nav-hints: root.harness-visible;
                 rpm: root.rpm;
                 speed: root.speed;
                 gear: root.gear;
@@ -236,8 +242,8 @@ export component SigmaDashboard inherits Window {
 
         if root.harness-visible: HarnessBar {
             x: 0;
-            y: 480px;
-            width: 800px;
+            y: parent.height - 96px;
+            width: parent.width;
             candump-path: root.candump-path;
             display-mode-label: root.display-mode-label;
             replay-rate <=> root.replay-rate;

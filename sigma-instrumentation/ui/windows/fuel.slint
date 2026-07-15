@@ -37,6 +37,8 @@ export component FuelWindow inherits Rectangle {
                 }
                 StatRow { label: "IN TANK"; value: "\{round(root.fuel-l * 10) / 10} L"; value-size: 22px; }
                 StatRow { label: "CAPACITY"; value: "\{root.tank-l} L"; value-size: 22px; }
+
+                Rectangle { vertical-stretch: 1; }
             }
 
             Rectangle { width: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }

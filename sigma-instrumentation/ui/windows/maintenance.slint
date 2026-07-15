@@ -25,6 +25,7 @@ export component MaintenanceWindow inherits Rectangle {
 
                 VerticalLayout {
                     spacing: 3px;
+                    vertical-stretch: 0;
                     StatRow {
                         label: "OIL LIFE";
                         value: "\{round(root.oil-life * 100)}%";
@@ -36,14 +37,18 @@ export component MaintenanceWindow inherits Rectangle {
 
                 VerticalLayout {
                     spacing: 3px;
+                    vertical-stretch: 0;
                     StatRow { label: "FRONT BRAKE PAD"; value: "\{round(root.brake-front * 100)}%"; value-size: 22px; }
                     MeterBar { ratio: root.brake-front; fill: root.brake-front < 0.2 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-ink; }
                 }
                 VerticalLayout {
                     spacing: 3px;
+                    vertical-stretch: 0;
                     StatRow { label: "REAR BRAKE PAD"; value: "\{round(root.brake-rear * 100)}%"; value-size: 22px; }
                     MeterBar { ratio: root.brake-rear; fill: root.brake-rear < 0.2 ? SigmaTheme.accent-red-dim : SigmaTheme.dial-ink; }
                 }
+
+                Rectangle { vertical-stretch: 1; }
             }
 
             Rectangle { width: 1px; background: SigmaTheme.dial-rule; opacity: SigmaTone.divider-opacity; }

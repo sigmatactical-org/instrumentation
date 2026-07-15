@@ -4,7 +4,8 @@ import { WindowFrame, Chip } from "common.slint";
 export component CameraFeed inherits Rectangle {
     in property <string> label: "CAMERA";
     in property <bool> available: true;
-    in property <bool> recording: true;
+    // Off until something actually records — never claim REC by default.
+    in property <bool> recording: false;
 
     border-radius: 6px;
     background: SigmaTheme.camera-feed-bg;
