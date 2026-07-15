@@ -5,6 +5,7 @@
 
 mod channel_release;
 mod config;
+mod ota;
 
 pub use channel_release::ChannelRelease;
 pub use config::UpdatesConfig;
@@ -155,13 +156,17 @@ pub fn start(ui: &SigmaDashboard, cfg: UpdatesConfig) {
                         ui.get_update_available_version()
                     )
                 });
-            let version = ui.get_update_available_version();
-            // RAUC client integration lands with the A/B updater service.
-            // Until then, surface a clear apply path so HMI + catalog are testable.
-            ui.set_update_status(SharedString::from(format!(
-                "Applying {version} from {bundle} — RAUC install hooks next; reboot after apply."
-            )));
-            ui.set_update_busy(false);
+            // Hand off to the root-owned OTA daemon; the status timer below
+            // relays its download/install progress into the status line.
+            match ota::request_install(&bundle) {
+                Ok(()) => {
+                    ui.set_update_status(SharedString::from("Update requested…"));
+                }
+                Err(err) => {
+                    ui.set_update_status(SharedString::from(err));
+                    ui.set_update_busy(false);
+                }
+            }
         });
     }
 
@@ -197,4 +202,30 @@ pub fn start(ui: &SigmaDashboard, cfg: UpdatesConfig) {
             apply_release(&ui, &cfg_once, &rel);
         }
     });
+
+    // Relay the OTA daemon's install progress into the status line.
+    let weak = ui.as_weak();
+    let last_status = Rc::new(RefCell::new(String::new()));
+    let ota_timer = slint::Timer::default();
+    ota_timer.start(
+        slint::TimerMode::Repeated,
+        Duration::from_secs(2),
+        move || {
+            let Some(ui) = weak.upgrade() else {
+                return;
+            };
+            let Some(status) = ota::read_status() else {
+                return;
+            };
+            if *last_status.borrow() == status {
+                return;
+            }
+            if let Some(text) = ota::describe(&status) {
+                ui.set_update_status(SharedString::from(text));
+                ui.set_update_busy(ota::in_flight(&status));
+            }
+            *last_status.borrow_mut() = status;
+        },
+    );
+    std::mem::forget(ota_timer);
 }
