@@ -9,8 +9,9 @@ import { TelemetryOverlay } from "widgets/telemetry_overlay.slint";
 import { HarnessBar } from "widgets/harness_bar.slint";
 import { SigmaTheme, SigmaTone } from "theme.slint";
 import { ConnItem } from "windows/connectivity.slint";
+import { AlertItem } from "windows/alerts.slint";
 
-export { Tick, SigmaTheme, SigmaTone, ConnItem }
+export { Tick, SigmaTheme, SigmaTone, ConnItem, AlertItem }
 
 export component SigmaDashboard inherits Window {
     title: "Sigma Instrumentation";
@@ -97,6 +98,13 @@ export component SigmaDashboard inherits Window {
     in property <string> heading-label: "NE";
     in property <int> elevation: 667;
     in property <bool> telemetry-live: false;
+
+    // Streaming anomaly alerts (Rust → UI only)
+    in property <string> alert-severity: "";
+    in property <string> alert-headline: "";
+    in property <int> alert-count: 0;
+    in property <[AlertItem]> alerts;
+    in property <bool> alerts-latched: false;
 
     // OTA catalog (sigma-updates / kind: updates.sigma.localtest.me)
     in property <string> update-channel: "dev";
@@ -209,6 +217,11 @@ export component SigmaDashboard inherits Window {
                 heading-label: root.heading-label;
                 elevation: root.elevation;
                 telemetry-live: root.telemetry-live;
+                alert-severity: root.alert-severity;
+                alert-headline: root.alert-headline;
+                alert-count: root.alert-count;
+                alerts: root.alerts;
+                alerts-latched: root.alerts-latched;
                 update-channel: root.update-channel;
                 update-current-version: root.update-current-version;
                 update-available-version: root.update-available-version;

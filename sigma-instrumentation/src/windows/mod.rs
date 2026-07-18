@@ -13,14 +13,18 @@
 //! | 2     | Compass/GPS   | left panel  |
 //! | 3     | Diagnostics   | left panel  |
 //! | 4     | Camera        | left panel  |
-//! | 5     | Connectivity  | full-screen |
-//! | 6     | Maintenance   | full-screen |
-//! | 7     | Fuel          | full-screen |
-//! | 8     | Security      | full-screen |
-//! | 9     | Updates       | full-screen |
+//! | 5     | Alerts        | left panel  |
+//! | 6     | Connectivity  | full-screen |
+//! | 7     | Maintenance   | full-screen |
+//! | 8     | Fuel          | full-screen |
+//! | 9     | Security      | full-screen |
+//! | 10    | Updates       | full-screen |
 
 /// Last index of glanceable left-panel windows (while moving).
-pub const PANEL_MAX: i32 = 4;
+pub const PANEL_MAX: i32 = 5;
+
+/// Streaming anomaly alerts window (Select acknowledges latched alerts).
+pub const ALERTS: i32 = 5;
 
 /// Total window count.
-pub const COUNT: i32 = 10;
+pub const COUNT: i32 = 11;

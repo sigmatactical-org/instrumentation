@@ -28,4 +28,4 @@ pub use snapshot::Snapshot;
 pub use view::{apply, apply_idle, build_items};
 
 /// Window index for Connectivity (keep in sync with [`crate::windows`]).
-pub const WINDOW: i32 = 5;
+pub const WINDOW: i32 = 6;

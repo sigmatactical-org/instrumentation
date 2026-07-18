@@ -17,7 +17,7 @@ use std::rc::Rc;
 use std::time::Duration;
 
 /// Window index for Updates (keep in sync with [`crate::windows`]).
-pub const WINDOW: i32 = 9;
+pub const WINDOW: i32 = 10;
 
 /// Focus index of the Check row.
 pub const FOCUS_CHECK: i32 = 0;

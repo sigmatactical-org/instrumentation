@@ -1,0 +1,102 @@
+import { SigmaTheme, SigmaTone } from "../theme.slint";
+import { WindowFrame } from "common.slint";
+
+export struct AlertItem {
+    time: string,
+    severity: string,
+    message: string,
+    active: bool,
+}
+
+// Left-panel details window for streaming anomaly alerts (window index 5).
+// The producer is sigma-racer-vehicle's deterministic anomaly engine; the
+// cluster only consumes Event messages — it never detects or actuates.
+export component AlertsWindow inherits Rectangle {
+    in property <[AlertItem]> alerts;
+    in property <string> worst-severity: "";
+    in property <int> active-count: 0;
+    in property <bool> any-latched: false;
+
+    WindowFrame {
+        width: 100%; height: 100%;
+        title: "ALERTS";
+        hint: root.active-count > 0 ? "\{root.active-count} ACTIVE" : "OK";
+
+        if root.alerts.length == 0: Text {
+            text: "NO ALERTS";
+            color: SigmaTheme.dial-whisper;
+            font-family: "Operation Napalm";
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+            vertical-stretch: 1;
+        }
+
+        for item in root.alerts: Rectangle {
+            height: 44px;
+            background: item.active
+                ? (item.severity == "CRITICAL"
+                    ? SigmaTheme.accent-red-dim
+                    : SigmaTheme.signal-amber-dim)
+                : transparent;
+            border-radius: 3px;
+            opacity: item.active ? 1.0 : 0.45;
+
+            HorizontalLayout {
+                padding: 5px;
+                spacing: 6px;
+
+                Rectangle {
+                    width: 4px;
+                    border-radius: 2px;
+                    background: item.severity == "CRITICAL"
+                        ? SigmaTheme.redline-bright
+                        : SigmaTheme.signal-amber;
+                }
+
+                VerticalLayout {
+                    spacing: 1px;
+                    HorizontalLayout {
+                        Text {
+                            text: item.severity;
+                            color: item.severity == "CRITICAL"
+                                ? SigmaTheme.redline-bright
+                                : SigmaTheme.signal-amber;
+                            font-size: 9px;
+                            font-weight: 800;
+                            letter-spacing: 1px;
+                        }
+                        Rectangle { horizontal-stretch: 1; }
+                        Text {
+                            text: item.time;
+                            color: SigmaTheme.dial-whisper;
+                            font-size: 9px;
+                            font-weight: 400;
+                        }
+                    }
+                    Text {
+                        text: item.message;
+                        color: SigmaTheme.dial-value;
+                        font-size: 11px;
+                        font-weight: 400;
+                        overflow: elide;
+                        wrap: no-wrap;
+                    }
+                }
+            }
+        }
+
+        Rectangle { vertical-stretch: 1; }
+
+        if root.any-latched: Text {
+            text: "SELECT to acknowledge";
+            color: SigmaTheme.dial-whisper;
+            font-size: 9px;
+            font-weight: 400;
+            horizontal-alignment: center;
+            opacity: SigmaTone.hint-opacity;
+        }
+    }
+}

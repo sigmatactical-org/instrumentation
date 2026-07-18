@@ -4,6 +4,7 @@ import { SystemsWindow } from "windows/systems.slint";
 import { NavigationWindow } from "windows/navigation.slint";
 import { CompassWindow } from "windows/compass_gps.slint";
 import { DiagnosticsWindow } from "windows/diagnostics.slint";
+import { AlertsWindow, AlertItem } from "windows/alerts.slint";
 import { ConnectivityWindow, ConnItem } from "windows/connectivity.slint";
 import { CameraPanelWindow } from "windows/camera.slint";
 import { MaintenanceWindow } from "windows/maintenance.slint";
@@ -12,9 +13,9 @@ import { SecurityWindow } from "windows/security.slint";
 import { UpdatesWindow } from "windows/updates.slint";
 
 // Window index table — keep in sync with windows/mod.rs and app.slint.
-//   0 Systems   1 Navigation   2 Compass/GPS   3 Diagnostics   4 Camera
-//   5 Connectivity   6 Maintenance   7 Fuel   8 Security   9 Updates
-// Indices 0–4: left panel while riding. 5–9: full-screen when stopped.
+//   0 Systems   1 Navigation   2 Compass/GPS   3 Diagnostics   4 Camera   5 Alerts
+//   6 Connectivity   7 Maintenance   8 Fuel   9 Security   10 Updates
+// Indices 0–5: left panel while riding. 6–10: full-screen when stopped.
 
 component FullScreenHost inherits Rectangle {
     in property <int> active-window: 0;
@@ -47,7 +48,7 @@ component FullScreenHost inherits Rectangle {
     height: 100%;
     background: transparent;
 
-    if root.active-window == 5: ConnectivityWindow {
+    if root.active-window == 6: ConnectivityWindow {
         width: 100%; height: 100%;
         show-nav-hints: root.show-nav-hints;
         conn-screen: root.conn-screen;
@@ -62,17 +63,17 @@ component FullScreenHost inherits Rectangle {
         wifi-connected: root.wifi-connected;
         wifi-ssid: root.wifi-ssid;
     }
-    if root.active-window == 6: MaintenanceWindow {
+    if root.active-window == 7: MaintenanceWindow {
         width: 100%; height: 100%;
     }
-    if root.active-window == 7: FuelWindow {
+    if root.active-window == 8: FuelWindow {
         width: 100%; height: 100%;
         fuel-pct: root.fuel-pct;
     }
-    if root.active-window == 8: SecurityWindow {
+    if root.active-window == 9: SecurityWindow {
         width: 100%; height: 100%;
     }
-    if root.active-window == 9: UpdatesWindow {
+    if root.active-window == 10: UpdatesWindow {
         width: 100%; height: 100%;
         show-nav-hints: root.show-nav-hints;
         channel: root.update-channel;
@@ -144,6 +145,13 @@ export component RoadDashboard inherits Rectangle {
     in property <int> elevation: 667;
     in property <bool> telemetry-live: true;
 
+    // Streaming anomaly alerts (worst-active telltale + details window 5)
+    in property <string> alert-severity: "";
+    in property <string> alert-headline: "";
+    in property <int> alert-count: 0;
+    in property <[AlertItem]> alerts;
+    in property <bool> alerts-latched: false;
+
     in property <string> update-channel: "dev";
     in property <string> update-current-version: "0.0.0";
     in property <string> update-available-version: "";
@@ -172,12 +180,13 @@ export component RoadDashboard inherits Rectangle {
     in property <bool> camera-rear-available: true;
 
     property <bool> stopped: root.speed == 0;
-    property <bool> show-fullscreen: root.stopped && root.current-window >= 5;
-    property <int> panel-window: root.current-window <= 4 ? root.current-window : 0;
+    property <bool> show-fullscreen: root.stopped && root.current-window >= 6;
+    property <int> panel-window: root.current-window <= 5 ? root.current-window : 0;
     // Bottom-right — other system messages (side stand is on the gear hub)
     property <string> system-message:
         root.update-available ? "UPDATE AVAILABLE"
         : (root.nav-blocked-hint && !root.stopped ? "Stop to open full-screen windows" : "");
+    property <bool> alert-critical: root.alert-severity == "CRITICAL";
 
     background: SigmaTheme.tft;
 
@@ -256,6 +265,13 @@ export component RoadDashboard inherits Rectangle {
                 front-available: root.camera-front-available;
                 rear-available: root.camera-rear-available;
             }
+            if root.panel-window == 5: AlertsWindow {
+                width: 100%; height: 100%;
+                alerts: root.alerts;
+                worst-severity: root.alert-severity;
+                active-count: root.alert-count;
+                any-latched: root.alerts-latched;
+            }
         }
 
         if root.show-nav-hints: Text {
@@ -316,8 +332,52 @@ export component RoadDashboard inherits Rectangle {
             }
         }
 
-        // BOTTOM-RIGHT — other system messages (not side stand)
-        if root.system-message != "": Rectangle {
+        // BOTTOM-RIGHT — worst-active anomaly telltale. One calm surface:
+        // the single highest-severity alert, never a list. Details live on
+        // the Alerts window (5). Takes precedence over system messages.
+        if root.alert-severity != "": Rectangle {
+            x: 560px;
+            y: 404px;
+            width: 228px;
+            height: 60px;
+            background: #000000e0;
+            border-radius: 4px;
+            border-width: 1px;
+            border-color: root.alert-critical
+                ? SigmaTheme.redline-bright-dim
+                : SigmaTheme.signal-amber-dim;
+            VerticalLayout {
+                padding: 6px;
+                padding-left: 10px;
+                padding-right: 10px;
+                spacing: 0px;
+                Text {
+                    text: root.alert-count > 1
+                        ? "\{root.alert-severity}  +\{root.alert-count - 1}"
+                        : root.alert-severity;
+                    color: root.alert-critical
+                        ? SigmaTheme.redline-bright
+                        : SigmaTheme.signal-amber;
+                    font-size: 10px;
+                    font-weight: 800;
+                    letter-spacing: 2px;
+                    horizontal-alignment: right;
+                }
+                Text {
+                    text: root.alert-headline;
+                    color: #ffffff;
+                    font-size: 19px;
+                    font-weight: 800;
+                    letter-spacing: 1px;
+                    horizontal-alignment: right;
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+            }
+        }
+
+        // BOTTOM-RIGHT — other system messages (only when no alert is active)
+        if root.alert-severity == "" && root.system-message != "": Rectangle {
             x: 560px;
             y: 400px;
             width: 228px;
